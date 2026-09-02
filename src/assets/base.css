@@ -1,0 +1,74 @@
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../asset/font/Satoshi/Satoshi-Regular.otf') format('opentype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../asset/font/Satoshi/Satoshi-Medium.otf') format('opentype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../asset/font/Satoshi/Satoshi-Bold.otf') format('opentype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Taipei Sans TC Beta';
+  src: url('../asset/font/TaipeiSansTCBeta/TaipeiSansTCBeta-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Taipei Sans TC Beta';
+  src: url('../asset/font/TaipeiSansTCBeta/TaipeiSansTCBeta-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --color-primary: #00c3d0;
+  --color-background: #fffefc;
+  --color-text: #000;
+  --grid-color: rgb(0 0 0 / 12%);
+  --font-en: 'Satoshi';
+  --font-tc: 'Taipei Sans TC Beta';
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-en), var(--font-tc), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+}
