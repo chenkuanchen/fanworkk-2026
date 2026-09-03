@@ -43,6 +43,8 @@
   --color-background: #fffefc;
   --color-text: #000;
   --grid-color: rgb(0 0 0 / 12%);
+  --grid-inset: 80px;
+  --grid-pair: 8px;
   --font-en: 'Satoshi';
   --font-tc: 'Taipei Sans TC Beta';
 }

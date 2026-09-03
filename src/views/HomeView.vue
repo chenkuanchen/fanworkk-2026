@@ -1,77 +1,105 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from "vue";
 
-import heroStart from '@/asset/image/destop/hero-filp-water-start.svg'
-import heroEnd from '@/asset/image/destop/hero-filp-water-end.svg'
-import contactIcon from '@/asset/image/contact/face.svg'
-import featureOne from '@/asset/image/destop/feature-1.jpg'
-import featureTwo from '@/asset/image/destop/feature-2.JPG'
-import featureThree from '@/asset/image/destop/feature-3.jpg'
+import heroStart from "@/asset/image/destop/hero-filp-water-start.svg";
+import heroEnd from "@/asset/image/destop/hero-filp-water-end.svg";
+import contactIcon from "@/asset/image/contact/face.svg";
+import featureOne from "@/asset/image/destop/feature-1.jpg";
+import featureTwo from "@/asset/image/destop/feature-2.JPG";
+import featureThree from "@/asset/image/destop/feature-3.jpg";
 
-const heroCard = ref(null)
-const heroYear = ref(null)
+const heroCard = ref(null);
+const heroYear = ref(null);
+const worksSection = ref(null);
 
 const works = [
   {
-    title: '台灣好樂園',
+    title: "台灣好樂園",
     image: featureOne,
-    category: 'Visual Identity, Event',
-    year: '2023',
+    category: "Visual Identity, Event",
+    year: "2023",
     description:
-      '以鮮明的視覺語言整理旅遊資訊，透過一致的色彩、圖像與版面系統，建立容易辨識且充滿活力的使用體驗。',
+      "以「全台樂園一站式探索」為核心，重新梳理網站資訊架構與使用體驗，讓使用者能更直覺地找到適合自己的樂園、活動與遊玩資訊。透過活潑親切的視覺語言與清晰的分類導覽，串聯全台樂園，打造兼具資訊性、探索感與趣味性的旅遊入口。",
   },
   {
-    title: '心動 ONE BUY ONE',
+    title: "心動 ONE BUY ONE",
     image: featureTwo,
-    category: 'Visual Identity, Event',
-    year: '2023',
+    category: "Visual Identity, Event",
+    year: "2023",
     description:
-      '從城市街景延伸活動主視覺，整合戶外旗幟與宣傳素材，讓訊息自然進入日常移動的空間與節奏。',
+      "從城市街景延伸活動主視覺，整合戶外旗幟與宣傳素材，讓訊息自然進入日常移動的空間與節奏。",
   },
   {
-    title: '山派季',
+    title: "山派季",
     image: featureThree,
-    category: 'Visual Identity, Event',
-    year: '2023',
+    category: "Visual Identity, Event",
+    year: "2023",
     description:
-      '以山林與戶外文化為核心建立活動識別，將自然質地轉化為清楚有力的視覺，並延伸至現場展示。',
+      "以山林與戶外文化為核心建立活動識別，將自然質地轉化為清楚有力的視覺，並延伸至現場展示。",
   },
-]
+];
 
-let animationFrame
+let animationFrame;
+let reduceMotion = false;
 
 function updateHero() {
-  animationFrame = undefined
+  if (!heroCard.value || !heroYear.value) return;
 
-  if (!heroCard.value || !heroYear.value) return
+  const hasReachedTrigger = heroYear.value.getBoundingClientRect().bottom <= 0;
 
-  const hasReachedTrigger = heroYear.value.getBoundingClientRect().bottom <= 0
-
-  heroCard.value.classList.toggle('hero-card--flipped', hasReachedTrigger)
+  heroCard.value.classList.toggle("hero-card--flipped", hasReachedTrigger);
 }
 
-function requestHeroUpdate() {
+function updateParallax() {
+  if (reduceMotion || !worksSection.value) return;
+
+  const mediaList = worksSection.value.querySelectorAll(".work__media");
+  const viewHeight = window.innerHeight;
+
+  mediaList.forEach((media) => {
+    const image = media.querySelector(".work__image");
+    if (!image) return;
+
+    const rect = media.getBoundingClientRect();
+    const travel = image.offsetHeight - media.offsetHeight;
+    if (travel <= 0) return;
+
+    const progress = (viewHeight - rect.top) / (viewHeight + rect.height);
+    const clamped = Math.min(1, Math.max(0, progress));
+
+    image.style.transform = `translate3d(0, ${-clamped * travel}px, 0)`;
+  });
+}
+
+function updateScrollEffects() {
+  animationFrame = undefined;
+  updateHero();
+  updateParallax();
+}
+
+function requestScrollUpdate() {
   if (!animationFrame) {
-    animationFrame = window.requestAnimationFrame(updateHero)
+    animationFrame = window.requestAnimationFrame(updateScrollEffects);
   }
 }
 
 onMounted(() => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) return;
 
-  window.addEventListener('scroll', requestHeroUpdate, { passive: true })
-  window.addEventListener('resize', requestHeroUpdate)
-  updateHero()
-})
+  window.addEventListener("scroll", requestScrollUpdate, { passive: true });
+  window.addEventListener("resize", requestScrollUpdate);
+  updateScrollEffects();
+});
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', requestHeroUpdate)
-  window.removeEventListener('resize', requestHeroUpdate)
+  window.removeEventListener("scroll", requestScrollUpdate);
+  window.removeEventListener("resize", requestScrollUpdate);
 
   if (animationFrame) {
-    window.cancelAnimationFrame(animationFrame)
+    window.cancelAnimationFrame(animationFrame);
   }
-})
+});
 </script>
 
 <template>
@@ -85,16 +113,7 @@ onUnmounted(() => {
       ></span>
     </div>
 
-    <header class="site-header">
-      <a class="site-header__brand" href="#top">fanworkk</a>
-      <nav class="site-header__nav" aria-label="主要導覽">
-        <a href="#works">works</a>
-        <a href="#info">info</a>
-      </nav>
-    </header>
-
     <section id="top" class="hero" aria-label="自我介紹">
-      <span id="info" class="hero__info-anchor" aria-hidden="true"></span>
       <p ref="heroYear" class="hero__year">KUANJEN&nbsp; 2026</p>
       <div class="hero__sticky">
         <div
@@ -112,22 +131,23 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <section id="works" class="featured-works">
+    <section id="works" ref="worksSection" class="featured-works">
       <h1 class="featured-works__heading">feature work</h1>
 
       <article v-for="work in works" :key="work.title" class="work">
         <h2 class="work__title">{{ work.title }}</h2>
-        <img class="work__image" :src="work.image" :alt="work.title" />
+        <div class="work__media">
+          <img class="work__image" :src="work.image" :alt="work.title" />
+        </div>
 
         <div class="work__details">
           <div class="work__meta">
             <span>{{ work.category }}</span>
             <span>{{ work.year }}</span>
           </div>
+          <span class="work__link">View Project&nbsp; →</span>
           <p>{{ work.description }}</p>
         </div>
-
-        <span class="work__link">View Project&nbsp; →</span>
       </article>
     </section>
 
@@ -140,10 +160,18 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+main {
+  container-type: inline-size;
+}
+
 .layout-grid {
+  --page-grid-cell: calc(
+    (100cqi - 2 * var(--grid-inset) - var(--grid-pair)) / 5
+  );
+
   position: fixed;
   z-index: 0;
-  inset: 0 80px;
+  inset: 0 var(--grid-inset);
   pointer-events: none;
 }
 
@@ -151,7 +179,7 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: calc(var(--line-index) * 20%);
+  left: calc(var(--line-index) * var(--page-grid-cell));
   border-left: 0.5px solid var(--grid-color);
 }
 
@@ -159,29 +187,10 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 8px;
+  left: var(--grid-pair);
   width: 0.5px;
   background: var(--grid-color);
-  content: '';
-}
-
-.site-header {
-  position: fixed;
-  z-index: 20;
-  top: 34px;
-  right: 80px;
-  left: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.site-header__nav {
-  display: flex;
-  width: 20%;
-  justify-content: space-between;
+  content: "";
 }
 
 .hero {
@@ -196,11 +205,6 @@ onUnmounted(() => {
   height: 100vh;
   min-height: 720px;
   perspective: 1200px;
-}
-
-.hero__info-anchor {
-  position: absolute;
-  top: 200vh;
 }
 
 .hero-card {
@@ -239,70 +243,119 @@ onUnmounted(() => {
 .hero__year {
   position: absolute;
   top: 50vh;
-  right: 80px;
+  right: var(--grid-inset);
   transform: translateY(-50%);
   font-size: 24px;
   font-weight: 700;
 }
 
 .featured-works {
+  --work-grid-cell: calc(
+    (100cqi - 2 * var(--grid-inset) - var(--grid-pair)) / 5
+  );
+  
   position: relative;
   z-index: 1;
-  padding: 150px 80px 320px;
+  
+  padding: 0 var(--grid-inset);
+  background-color: var(--color-background);
+}
+
+.featured-works::before {
+  position: absolute;
+  inset: 0 var(--grid-inset);
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='8' height='8' fill='%2300c3d0'/%3E%3C/svg%3E");
+  background-position: 0 0;
+  background-repeat: repeat;
+  background-size: var(--work-grid-cell) var(--work-grid-cell);
+  content: "";
+}
+
+.featured-works__heading,
+.featured-works .work {
+  /* background-color: blue; */
+  /* background-color: aqua; */
+  position: relative;
+  z-index: 1;
 }
 
 .featured-works__heading {
-  margin-bottom: 150px;
+  height: var(--work-grid-cell);
+  padding-top: var(--grid-pair);
+  padding-left: var(--grid-pair);
   font-size: 36px;
   line-height: 1;
 }
 
 .work {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, var(--work-grid-cell));
   align-items: start;
-  margin-bottom: 170px;
+  margin-bottom: var(--work-grid-cell);
 }
 
 .work__title {
+  /* background-color: yellowgreen; */
+  position: sticky;
+  top: 400px; /*調整黏住高度*/
   padding-right: 28px;
+  padding-left: var(--grid-pair);
   font-family: var(--font-tc);
   font-size: 36px;
   line-height: 1.2;
 }
 
-.work__image {
+.work__media {
   grid-column: 2 / span 2;
+  width: calc(100% - var(--grid-pair));
+  height: calc(3 * var(--work-grid-cell) - var(--grid-pair));
+  margin-top: var(--grid-pair);
+  margin-left: var(--grid-pair);
+  overflow: hidden;
+}
+
+.work__image {
+  display: block;
   width: 100%;
-  aspect-ratio: 2 / 3;
+  height: 130%;
   object-fit: cover;
+  will-change: transform;
 }
 
 .work__details {
-  grid-column: 4;
-  padding: 0 24px;
+  display: grid;
+  grid-column: 4 / -1;
+  grid-template-columns: 1fr auto;
+  width: calc(100% - var(--grid-pair));
+  margin-left: var(--grid-pair);
+  align-self: center;
+  align-items: start;
+  column-gap: 24px;
   font-size: 20px;
   line-height: 30px;
 }
 
 .work__meta {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 36px;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.work__link {
   font-size: 20px;
   font-weight: 700;
   line-height: 18px;
 }
 
 .work__details p {
+  grid-column: 1 / -1;
+  margin-top: 48px;
   font-family: var(--font-tc);
-}
-
-.work__link {
-  grid-column: 5;
-  justify-self: end;
-  font-size: 20px;
-  font-weight: 700;
 }
 
 .contact-bar {
@@ -341,13 +394,18 @@ onUnmounted(() => {
     height: 100vh;
   }
 
-  .hero__info-anchor {
-    top: 0;
-  }
-
   .hero-card {
     transform: translate(-50%, -50%) rotateY(180deg);
     transition: none;
+    will-change: auto;
+  }
+
+  .work__title {
+    position: static;
+  }
+
+  .work__image {
+    height: 100%;
     will-change: auto;
   }
 }
