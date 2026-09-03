@@ -8,7 +8,7 @@ import { RouterLink } from "vue-router";
       fanworkk
     </RouterLink>
     <nav class="site-header__nav" aria-label="主要導覽">
-      <RouterLink :to="{ name: 'home', hash: '#works' }">works</RouterLink>
+      <RouterLink :to="{ name: 'works' }">works</RouterLink>
       <RouterLink :to="{ name: 'info' }">info</RouterLink>
     </nav>
   </header>
