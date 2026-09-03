@@ -1,8 +1,8 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
+import { RouterLink } from "vue-router";
 
 import heroStart from "@/asset/image/destop/hero-filp-water-start.svg";
-import heroEnd from "@/asset/image/destop/hero-filp-water-end.svg";
 import contactIcon from "@/asset/image/contact/face.svg";
 import featureOne from "@/asset/image/destop/feature-1.jpg";
 import featureTwo from "@/asset/image/destop/feature-2.JPG";
@@ -40,6 +40,7 @@ const works = [
 ];
 
 let animationFrame;
+let imageObserver;
 let reduceMotion = false;
 
 function updateHero() {
@@ -83,9 +84,35 @@ function requestScrollUpdate() {
   }
 }
 
+function revealFeaturedImage(event) {
+  const media = event.currentTarget.parentElement;
+
+  media.classList.add("work__media--loaded");
+  imageObserver?.observe(media);
+}
+
 onMounted(() => {
   reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduceMotion) return;
+
+  imageObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.add("work__media--visible");
+        imageObserver.unobserve(entry.target);
+      });
+    },
+    {
+      rootMargin: "0px 0px -20% 0px",
+      threshold: 0.2,
+    },
+  );
+
+  worksSection.value
+    .querySelectorAll(".work__media")
+    .forEach((media) => imageObserver.observe(media));
 
   window.addEventListener("scroll", requestScrollUpdate, { passive: true });
   window.addEventListener("resize", requestScrollUpdate);
@@ -95,6 +122,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener("scroll", requestScrollUpdate);
   window.removeEventListener("resize", requestScrollUpdate);
+  imageObserver?.disconnect();
 
   if (animationFrame) {
     window.cancelAnimationFrame(animationFrame);
@@ -119,13 +147,21 @@ onUnmounted(() => {
         <div
           ref="heroCard"
           class="hero-card"
-          aria-label="我是冠臻，多媒體設計師，現居台中。作品橫跨動畫、3D 以及平面設計。"
         >
           <div class="hero-card__face">
             <img :src="heroStart" alt="" />
           </div>
           <div class="hero-card__face hero-card__face--back">
-            <img :src="heroEnd" alt="" />
+            <p class="hero-card__intro">
+              我是冠臻，多媒體設計師，現居台中。<br />
+              作品橫跨動畫、3D 以及平面設計。<br />
+              喜歡探究有趣的設計數位體驗，善於<br />
+              轉譯訊息為多面向、能被感受與記<br />
+              憶的產物。
+            </p>
+            <RouterLink class="hero-card__more" :to="{ name: 'info' }">
+              read more&nbsp; →
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -137,7 +173,12 @@ onUnmounted(() => {
       <article v-for="work in works" :key="work.title" class="work">
         <h2 class="work__title">{{ work.title }}</h2>
         <div class="work__media">
-          <img class="work__image" :src="work.image" :alt="work.title" />
+          <img
+            class="work__image"
+            :src="work.image"
+            :alt="work.title"
+            @load="revealFeaturedImage"
+          />
         </div>
 
         <div class="work__details">
@@ -211,6 +252,7 @@ main {
   position: absolute;
   top: 50%;
   left: 50%;
+  container-type: inline-size;
   width: min(437px, 36vw);
   aspect-ratio: 437 / 578;
   transform: translate(-50%, -50%) rotateY(0deg);
@@ -231,7 +273,29 @@ main {
 }
 
 .hero-card__face--back {
+  overflow: hidden;
+  border-radius: 50% 50% 0 0 / 25.5% 25.5% 0 0;
+  background: #fff;
+  box-shadow: 0 12px 24px rgb(0 0 0 / 16%);
   transform: rotateY(180deg);
+}
+
+.hero-card__intro {
+  position: absolute;
+  top: 36.5%;
+  right: 13.7%;
+  left: 13.7%;
+  font-family: var(--font-tc);
+  font-size: 4.2cqi;
+  line-height: 1.85;
+}
+
+.hero-card__more {
+  position: absolute;
+  bottom: 10.5%;
+  left: 13.7%;
+  font-size: 5cqi;
+  font-weight: 700;
 }
 
 .hero-card img {
@@ -308,6 +372,7 @@ main {
 }
 
 .work__media {
+  position: relative;
   grid-column: 2 / span 2;
   width: calc(100% - var(--grid-pair));
   height: calc(3 * var(--work-grid-cell) - var(--grid-pair));
@@ -316,12 +381,49 @@ main {
   overflow: hidden;
 }
 
+.work__media::before,
+.work__media::after {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: var(--color-background);
+  content: "";
+  pointer-events: none;
+  transform: scaleY(1);
+  transform-origin: top;
+  will-change: transform;
+}
+
+.work__media::before {
+  left: 0;
+}
+
+.work__media::after {
+  right: 0;
+}
+
+.work__media--loaded.work__media--visible::before {
+  animation: reveal-image 1.2s 250ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.work__media--loaded.work__media--visible::after {
+  animation: reveal-image 1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
 .work__image {
   display: block;
   width: 100%;
   height: 130%;
   object-fit: cover;
   will-change: transform;
+}
+
+@keyframes reveal-image {
+  to {
+    transform: scaleY(0);
+  }
 }
 
 .work__details {
@@ -407,6 +509,12 @@ main {
   .work__image {
     height: 100%;
     will-change: auto;
+  }
+
+  .work__media::before,
+  .work__media::after {
+    animation: none;
+    transform: scaleY(0);
   }
 }
 </style>

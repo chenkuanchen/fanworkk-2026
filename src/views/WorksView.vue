@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 import contactIcon from "@/asset/image/contact/face.svg";
 import gameArtImage from "@/asset/image/works/G1.png";
@@ -104,15 +104,63 @@ const works = [
 ];
 
 const selectedCategory = ref("View All");
-const visibleWorks = computed(() =>
-  selectedCategory.value === "View All"
+const worksPage = ref(null);
+let imageObserver;
+
+function toggleCategory(category) {
+  selectedCategory.value =
+    selectedCategory.value === category ? null : category;
+}
+
+function getCategoryWorks(category) {
+  return category === "View All"
     ? works
-    : works.filter((work) => work.category === selectedCategory.value),
-);
+    : works.filter((work) => work.category === category);
+}
+
+function registerWorkImage(event) {
+  const media = event.currentTarget.parentElement;
+
+  media.classList.add("work-card__media--loaded");
+  imageObserver?.observe(media);
+}
+
+function stopObservingImages(panel) {
+  panel
+    .querySelectorAll(".work-card__media")
+    .forEach((media) => imageObserver?.unobserve(media));
+}
+
+onMounted(() => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  imageObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.add("work-card__media--visible");
+        imageObserver.unobserve(entry.target);
+      });
+    },
+    {
+      rootMargin: "0px 0px -20% 0px",
+      threshold: 0.2,
+    },
+  );
+
+  worksPage.value
+    .querySelectorAll(".work-card__media")
+    .forEach((media) => imageObserver.observe(media));
+});
+
+onUnmounted(() => {
+  imageObserver?.disconnect();
+});
 </script>
 
 <template>
-  <main id="top" class="works-page">
+  <main id="top" ref="worksPage" class="works-page">
     <div class="layout-grid" aria-hidden="true">
       <span
         v-for="index in 7"
@@ -128,24 +176,41 @@ const visibleWorks = computed(() =>
           class="works-filter"
           type="button"
           :aria-pressed="selectedCategory === category.name"
-          @click="selectedCategory = category.name"
+          @click="toggleCategory(category.name)"
         >
           {{ category.name }}<sup v-if="category.count">{{ category.count }}</sup>
         </button>
 
-        <div
-          v-if="selectedCategory === category.name && visibleWorks.length"
-          class="works-grid"
-        >
-          <article v-for="work in visibleWorks" :key="work.title" class="work-card">
-            <img class="work-card__image" :src="work.image" :alt="work.title" />
-            <div class="work-card__details">
-              <h2>{{ work.title }}</h2>
-              <p>{{ work.type }}</p>
-              <p>{{ work.year }}</p>
+        <Transition name="works-panel" @after-leave="stopObservingImages">
+          <div
+            v-if="selectedCategory === category.name && category.count"
+            class="works-panel"
+          >
+            <div class="works-panel__inner">
+              <div class="works-grid">
+                <article
+                  v-for="work in getCategoryWorks(category.name)"
+                  :key="work.title"
+                  class="work-card"
+                >
+                  <div class="work-card__media">
+                    <img
+                      class="work-card__image"
+                      :src="work.image"
+                      :alt="work.title"
+                      @load="registerWorkImage"
+                    />
+                  </div>
+                  <div class="work-card__details">
+                    <h2>{{ work.title }}</h2>
+                    <p>{{ work.type }}</p>
+                    <p>{{ work.year }}</p>
+                  </div>
+                </article>
+              </div>
             </div>
-          </article>
-        </div>
+          </div>
+        </Transition>
       </template>
     </section>
 
@@ -164,7 +229,7 @@ const visibleWorks = computed(() =>
   );
 
   min-height: 100vh;
-  padding: 180px 0;
+  padding: 150px 0;
   container-type: inline-size;
 }
 
@@ -231,6 +296,30 @@ const visibleWorks = computed(() =>
   outline-offset: 4px;
 }
 
+.works-panel {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.works-panel__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.works-panel-enter-active,
+.works-panel-leave-active {
+  transition:
+    grid-template-rows 700ms cubic-bezier(0.65, 0, 0.35, 1),
+    opacity 350ms ease;
+}
+
+.works-panel-enter-from,
+.works-panel-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
 .works-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -238,11 +327,29 @@ const visibleWorks = computed(() =>
   margin-top: 94px;
 }
 
+.work-card__media {
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
 .work-card__image {
   display: block;
   width: 100%;
-  aspect-ratio: 1;
+  height: 100%;
+  opacity: 0;
   object-fit: cover;
+  transform: translate3d(0, 48px, 0);
+}
+
+.work-card__media--loaded.work-card__media--visible .work-card__image {
+  animation: work-image-in 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes work-image-in {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 .work-card__details {
@@ -280,5 +387,18 @@ const visibleWorks = computed(() =>
   width: 82px;
   height: 56px;
   margin-left: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .works-panel-enter-active,
+  .works-panel-leave-active {
+    transition: none;
+  }
+
+  .work-card__image {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 </style>
