@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import { onMounted, onUnmounted, reactive, ref } from "vue";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -18,17 +18,17 @@ const experiences = [
   {
     year: "2024-2026",
     name: "勤美生活創新股份有限公司",
-    role: "Visual Design",
+    role: "視覺設計",
   },
   {
     year: "2023",
     name: "門戶科技股份有限公司",
-    role: "Visual Design",
+    role: "視覺設計",
   },
   {
     year: "2022",
     name: "優派國際股份有限公司",
-    role: "Design Internship",
+    role: "設計實習",
   },
 ];
 
@@ -43,20 +43,15 @@ const education = [
 const achievements = [
   {
     year: "2023",
-    name: "〈迷失〉",
+    name: "迷失",
     role: "Vision Get Together Award — Game / PC / Console 入圍",
   },
   {
     year: "2023",
-    name: "〈COOCON 繭：形而上〉",
-    role: "金點設計獎 — 金點概念設計獎特別獎",
+    name: "COOCON 繭：形而上",
+    role: "金點設計獎 — 金點新秀贊助特別獎",
   },
 ];
-
-const skillsOpacity = computed(() => 1 - Math.min(1, scrollState.intro * 1.35));
-const infoOpacity = computed(() =>
-  Math.min(1, Math.max(0, (scrollState.intro - 0.28) / 0.45)),
-);
 
 let ctx;
 
@@ -108,25 +103,49 @@ onUnmounted(() => {
 
     <section ref="heroSection" class="info-hero" aria-label="技能與簡介">
       <div class="info-hero__sticky">
-        <p class="info-hero__skills" :style="{ opacity: skillsOpacity }">
-          Graphic Design (Adobe Illustrator) (Adobe Photoshop), Web Design
-          (Figma), 3D (Blender), Motion Design (Adobe After Effects), Game Art
-          (Unity).
+        <div class="info-hero__grid" aria-hidden="true">
+          <span
+            v-for="index in 6"
+            :key="index"
+            class="layout-grid__line"
+            :style="{ '--line-index': index - 1 }"
+          ></span>
+        </div>
+
+        <GlassScene class="info-hero__glass" :progress="glassProgress" />
+
+        <p
+          class="info-hero__skills"
+          :style="{
+            transform: `translate(-50%, -50%) translateY(${-scrollState.intro * 100}vh)`,
+          }"
+        >
+          Graphic Design (Adobe Illustrator) (Adobe Photoshop),
+          Web Design (Figma), 3D (Blender), Motion Design (Adobe After
+          Effects),Game Art (Unity).
         </p>
+
+        <img
+          class="info-hero__deco"
+          :src="decoShape"
+          alt=""
+          :style="{
+            transform: `translate(-50%, -50%) translateY(${(1 - scrollState.intro) * 100}vh)`,
+          }"
+        />
 
         <div
           class="info-hero__intro"
-          :style="{ opacity: infoOpacity }"
-          :aria-hidden="infoOpacity < 0.2"
+          :style="{
+            transform: `translateY(-50%) translateY(${(1 - scrollState.intro) * 100}vh)`,
+          }"
+          :aria-hidden="scrollState.intro < 0.2"
         >
-          <img class="info-hero__deco" :src="decoShape" alt="" />
           <h1>Information</h1>
           <p>
             陳冠臻,多媒體設計師,現居台中。喜歡塗塗抹抹、剪剪貼貼,志於製作視覺,喜愛探索設計在不同媒介中的可能性。曾任職於百貨業,負責製作具備品牌思維的活動識別;過程中發現,比起活動製作物本身,我更著迷於互動相關的內容——因此目前正朝網頁設計的方向發展，半瓶水持續灌溉中。
           </p>
         </div>
-
-        <GlassScene class="info-hero__glass" :progress="glassProgress" />
       </div>
     </section>
 
@@ -137,12 +156,10 @@ onUnmounted(() => {
 
       <div class="info-details__content">
         <section class="info-block">
-          <div class="info-block__heading">
-            <span class="info-block__marker" aria-hidden="true"></span>
-            <h2>Experience</h2>
-          </div>
+          <h2>Experience</h2>
           <div class="info-block__cols" aria-hidden="true">
             <span>YEAR</span>
+            <span>NAME</span>
             <span>NAME</span>
           </div>
           <ul>
@@ -155,12 +172,10 @@ onUnmounted(() => {
         </section>
 
         <section class="info-block">
-          <div class="info-block__heading">
-            <span class="info-block__marker" aria-hidden="true"></span>
-            <h2>Education</h2>
-          </div>
+          <h2>Education</h2>
           <div class="info-block__cols" aria-hidden="true">
             <span>YEAR</span>
+            <span>NAME</span>
             <span>NAME</span>
           </div>
           <ul>
@@ -173,12 +188,10 @@ onUnmounted(() => {
         </section>
 
         <section class="info-block">
-          <div class="info-block__heading">
-            <span class="info-block__marker" aria-hidden="true"></span>
-            <h2>Achievements</h2>
-          </div>
+          <h2>Achievements</h2>
           <div class="info-block__cols" aria-hidden="true">
             <span>YEAR</span>
+            <span>NAME</span>
             <span>NAME</span>
           </div>
           <ul>
@@ -201,6 +214,14 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.info-page {
+  --page-grid-cell: calc(
+    (100cqi - 2 * var(--grid-inset) - var(--grid-pair)) / 5
+  );
+
+  container-type: inline-size;
+}
+
 .layout-grid {
   position: fixed;
   z-index: 0;
@@ -212,7 +233,7 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: calc(var(--line-index) * 20%);
+  left: calc(var(--line-index) * var(--page-grid-cell));
   border-left: 0.5px solid var(--grid-color);
 }
 
@@ -238,48 +259,59 @@ onUnmounted(() => {
   height: 100vh;
   min-height: 720px;
   overflow: hidden;
+  background: var(--color-background);
+}
+
+.info-hero__grid {
+  position: absolute;
+  z-index: 0;
+  inset: 0 var(--grid-inset);
+  pointer-events: none;
+}
+
+.info-hero__skills,
+.info-hero__intro {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: calc(var(--grid-inset) + var(--grid-pair));
+  pointer-events: none;
+  will-change: transform;
 }
 
 .info-hero__skills {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  left: calc(var(--grid-inset) + var(--grid-pair));
-  width: min(920px, 58vw);
-  transform: translateY(-50%);
-  font-size: clamp(28px, 2.6vw, 40px);
-  font-weight: 700;
-  line-height: 1.35;
-  text-align: left;
-  pointer-events: none;
+  left: 50%;
+  width: min(1100px, 86vw);
+  color: #fff;
+  font-size: 64px;
+  font-weight: 500;
+  line-height: 1.2;
+  mix-blend-mode: difference;
+  text-align: center;
 }
 
 .info-hero__intro {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  left: calc(var(--grid-inset) + var(--grid-pair));
-  width: min(520px, 36vw);
-  transform: translateY(-50%);
+  width: min(300px, 36vw);
   text-align: left;
-  pointer-events: none;
 }
 
 .info-hero__deco {
   position: absolute;
-  top: -18%;
-  left: -12%;
-  width: 140%;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  width: min(420px, 50vw);
   max-width: none;
   opacity: 0.22;
   filter: invert(1) grayscale(1) brightness(1.35);
   mix-blend-mode: multiply;
   pointer-events: none;
+  will-change: transform;
 }
 
 .info-hero__intro h1 {
   position: relative;
-  margin-bottom: 28px;
+  margin-bottom: 42px;
   font-size: 36px;
   font-weight: 700;
   line-height: 1;
@@ -290,6 +322,7 @@ onUnmounted(() => {
   font-family: var(--font-tc);
   font-size: 20px;
   line-height: 1.7;
+  letter-spacing: 0.02em;
 }
 
 .info-hero__glass {
@@ -297,20 +330,42 @@ onUnmounted(() => {
 }
 
 .info-details {
-  --detail-cell: calc((100vw - 2 * var(--grid-inset)) / 5);
+  --detail-cell: var(--page-grid-cell);
 
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: var(--detail-cell) 1fr;
+  grid-template-columns: repeat(5, var(--detail-cell));
   gap: 0;
   padding: 12vh var(--grid-inset) 20vh;
   background: var(--color-background);
 }
 
+.info-details::before {
+  position: absolute;
+  inset: 0 var(--grid-inset);
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='8' height='8' fill='%2300c3d0'/%3E%3C/svg%3E");
+  background-position: 0 0;
+  background-repeat: repeat;
+  background-size: var(--detail-cell) var(--detail-cell);
+  content: "";
+}
+
+.info-details__media,
+.info-details__content {
+  position: relative;
+  z-index: 1;
+}
+
 .info-details__media {
-  width: calc(100% - var(--grid-pair));
-  margin-left: var(--grid-pair);
+  position: absolute;
+  top: 0;
+  bottom: var(--detail-cell);
+  left: calc(var(--grid-inset) + var(--grid-pair));
+  z-index: 1;
+  width: calc(var(--detail-cell) - var(--grid-pair));
   overflow: hidden;
 }
 
@@ -318,33 +373,27 @@ onUnmounted(() => {
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 720px;
   object-fit: cover;
 }
 
 .info-details__content {
-  padding-left: calc(var(--detail-cell) * 0.15);
+  grid-column: 3 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
 }
 
 .info-block {
   position: relative;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
   margin-bottom: 96px;
 }
 
-.info-block__heading {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 36px;
-}
-
-.info-block__marker {
-  width: 10px;
-  height: 10px;
-  background: var(--color-primary);
-}
-
 .info-block h2 {
+  grid-column: 1 / -1;
+  margin-bottom: 36px;
+  padding-left: var(--grid-pair);
   font-size: 36px;
   font-weight: 700;
   line-height: 1;
@@ -352,11 +401,10 @@ onUnmounted(() => {
 
 .info-block__cols,
 .info-block li {
+  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 160px minmax(0, 1.2fr) minmax(0, 1.4fr);
-  gap: 24px;
+  grid-template-columns: subgrid;
   align-items: start;
-  padding-left: 26px;
 }
 
 .info-block__cols {
@@ -367,7 +415,13 @@ onUnmounted(() => {
   opacity: 0.55;
 }
 
+.info-block__cols span,
+.info-block li > span {
+  padding-left: var(--grid-pair);
+}
+
 .info-block ul {
+  display: contents;
   list-style: none;
   padding: 0;
 }
@@ -379,7 +433,7 @@ onUnmounted(() => {
 }
 
 .info-block li span:first-child {
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .info-block li span:nth-child(2) {
@@ -412,11 +466,9 @@ onUnmounted(() => {
 @media (max-width: 960px) {
   .info-hero__skills {
     width: min(86vw, 640px);
-    font-size: 24px;
   }
 
   .info-hero__intro {
-    left: calc(var(--grid-inset) + var(--grid-pair));
     width: min(70vw, 420px);
   }
 
@@ -425,17 +477,38 @@ onUnmounted(() => {
     gap: 48px;
   }
 
+  .info-details__content {
+    grid-column: auto;
+    display: block;
+  }
+
+  .info-block {
+    display: block;
+  }
+
   .info-details__media {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    width: calc(100% - var(--grid-pair));
     max-height: 360px;
+    margin-left: var(--grid-pair);
   }
 
   .info-details__media img {
     min-height: 280px;
   }
 
+  .info-block ul {
+    display: block;
+  }
+
   .info-block__cols,
   .info-block li {
+    display: grid;
     grid-template-columns: 110px 1fr;
+    grid-column: auto;
   }
 
   .info-block li span:nth-child(3) {

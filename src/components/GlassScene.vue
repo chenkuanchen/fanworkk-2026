@@ -1,10 +1,15 @@
 <script setup>
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import * as THREE from "three";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import {
+  MeshDiscardMaterial,
+  MeshTransmissionMaterial,
+  useFBO,
+} from "@pmndrs/vanilla";
 
-import glassUrl from "@/asset/image/about-me/glass.fbx?url";
+import glassUrl from "@/asset/image/about-me/glass.glb?url";
 
 const props = defineProps({
   /** 0 = hero 中央起始姿態，1 = Information 右側結束姿態 */
@@ -19,6 +24,10 @@ let camera;
 let model;
 let frameId;
 let resizeObserver;
+let discardMaterial;
+let fboMain;
+let fboBack;
+const transmissionMeshes = [];
 
 function lerp(a, b, t) {
   return a + (b - a) * t;
@@ -51,7 +60,7 @@ function fitModel(object) {
   object.position.sub(center);
 
   const maxDim = Math.max(size.x, size.y, size.z) || 1;
-  const baseScale = 2.6 / maxDim;
+  const baseScale = 1.3 / maxDim;
   object.userData.baseScale = baseScale;
   object.scale.setScalar(baseScale);
 }
@@ -63,38 +72,42 @@ function enhanceGlassMaterials(root) {
     const sourceMats = Array.isArray(child.material)
       ? child.material
       : [child.material];
+    const source = sourceMats[0];
+    const name = (source?.name || child.name || "").toLowerCase();
+    const looksLikeLiquid =
+      name.includes("water") ||
+      name.includes("liquid") ||
+      name.includes("fluid");
 
-    const nextMats = sourceMats.map((mat) => {
-      const name = (mat?.name || child.name || "").toLowerCase();
-      const looksLikeLiquid =
-        name.includes("water") ||
-        name.includes("liquid") ||
-        name.includes("fluid");
-
-      return new THREE.MeshPhysicalMaterial({
-        map: mat?.map || null,
-        normalMap: mat?.normalMap || null,
-        color: mat?.color?.clone?.() || new THREE.Color(looksLikeLiquid ? 0xd8f4ff : 0xffffff),
-        metalness: 0,
-        roughness: looksLikeLiquid ? 0.08 : 0.04,
-        transmission: looksLikeLiquid ? 0.92 : 1,
-        thickness: looksLikeLiquid ? 1.4 : 0.55,
-        ior: looksLikeLiquid ? 1.33 : 1.5,
-        transparent: true,
-        opacity: 1,
-        clearcoat: looksLikeLiquid ? 0.2 : 1,
-        clearcoatRoughness: 0.05,
-        attenuationColor: looksLikeLiquid
-          ? new THREE.Color(0xb8e8f5)
-          : undefined,
-        attenuationDistance: looksLikeLiquid ? 2.5 : Infinity,
-        side: THREE.DoubleSide,
-      });
+    const material = new MeshTransmissionMaterial({
+      samples: 6,
+      _transmission: 1,
+      thickness: looksLikeLiquid ? 0.6 : 0.55,
+      roughness: looksLikeLiquid ? 0.08 : 0.04,
+      chromaticAberration: looksLikeLiquid ? 0.01 : 0.03,
+      anisotropicBlur: 0.1,
     });
 
-    child.material = nextMats.length === 1 ? nextMats[0] : nextMats;
+    material.color.copy(source?.color || new THREE.Color(looksLikeLiquid ? 0xd8f4ff : 0xffffff));
+    material.map = source?.map || null;
+    material.normalMap = source?.normalMap || null;
+    material.ior = looksLikeLiquid ? 1.33 : 1.5;
+    material.envMapIntensity = 1.25;
+    material.clearcoat = looksLikeLiquid ? 0.2 : 1;
+    material.clearcoatRoughness = 0.05;
+    material.attenuationColor = looksLikeLiquid
+      ? new THREE.Color(0xb8e8f5)
+      : new THREE.Color(0xffffff);
+    material.attenuationDistance = looksLikeLiquid ? 2.5 : Infinity;
+    material.side = THREE.DoubleSide;
+
+    child.material = material;
     child.castShadow = false;
     child.receiveShadow = false;
+    child.userData.transmissionMaterial = material;
+    child.userData.thickness = material.thickness;
+    child.userData.backsideThickness = looksLikeLiquid ? 0.6 : 0.25;
+    transmissionMeshes.push(child);
   });
 }
 
@@ -109,11 +122,46 @@ function resize() {
   renderer.setSize(width, height, false);
 }
 
-function renderLoop() {
-  frameId = window.requestAnimationFrame(renderLoop);
-  if (renderer && scene && camera) {
+function updateTransmissionBuffers(time) {
+  if (!renderer || !scene || !camera || !fboMain || !discardMaterial) return;
+
+  const oldTone = renderer.toneMapping;
+  const oldBackground = scene.background;
+  renderer.toneMapping = THREE.NoToneMapping;
+  scene.background = scene.environment;
+
+  for (const mesh of transmissionMeshes) {
+    const material = mesh.userData.transmissionMaterial;
+    material.time = time;
+    mesh.material = discardMaterial;
+
+    renderer.setRenderTarget(fboBack);
     renderer.render(scene, camera);
+
+    mesh.material = material;
+    material.buffer = fboBack.texture;
+    material.thickness = mesh.userData.backsideThickness;
+    material.side = THREE.BackSide;
+
+    renderer.setRenderTarget(fboMain);
+    renderer.render(scene, camera);
+
+    material.thickness = mesh.userData.thickness;
+    material.side = THREE.DoubleSide;
+    material.buffer = fboMain.texture;
   }
+
+  scene.background = oldBackground;
+  renderer.setRenderTarget(null);
+  renderer.toneMapping = oldTone;
+}
+
+function renderLoop(time = 0) {
+  frameId = window.requestAnimationFrame(renderLoop);
+  if (!renderer || !scene || !camera) return;
+
+  updateTransmissionBuffers(time * 0.001);
+  renderer.render(scene, camera);
 }
 
 onMounted(async () => {
@@ -140,6 +188,10 @@ onMounted(async () => {
   renderer.toneMappingExposure = 1.05;
   host.value.appendChild(renderer.domElement);
 
+  discardMaterial = new MeshDiscardMaterial();
+  fboBack = useFBO(512, 512);
+  fboMain = useFBO(512, 512);
+
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   pmrem.dispose();
@@ -153,15 +205,15 @@ onMounted(async () => {
   scene.add(fill);
 
   try {
-    const loader = new FBXLoader();
-    const fbx = await loader.loadAsync(glassUrl);
-    enhanceGlassMaterials(fbx);
-    fitModel(fbx);
-    model = fbx;
+    const gltf = await new GLTFLoader().loadAsync(glassUrl);
+    const glass = gltf.scene;
+    enhanceGlassMaterials(glass);
+    fitModel(glass);
+    model = glass;
     scene.add(model);
     applyProgress(props.progress);
   } catch (error) {
-    console.error("Failed to load glass.fbx", error);
+    console.error("Failed to load glass scene", error);
   }
 
   resizeObserver = new ResizeObserver(resize);
@@ -188,6 +240,11 @@ onUnmounted(() => {
       mats.forEach((mat) => mat?.dispose());
     });
   }
+
+  transmissionMeshes.length = 0;
+  discardMaterial?.dispose();
+  fboBack?.dispose();
+  fboMain?.dispose();
 
   scene?.environment?.dispose();
   renderer?.dispose();
