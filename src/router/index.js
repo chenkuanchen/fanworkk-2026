@@ -1,9 +1,19 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import InfoView from '@/views/InfoView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes: [{ path: '/', name: 'home', component: HomeView }],
+  routes: [
+    { path: '/', name: 'home', component: HomeView },
+    { path: '/info', name: 'info', component: InfoView },
+  ],
+  scrollBehavior(to) {
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth' }
+    }
+    return { top: 0 }
+  },
 })
 
 export default router
