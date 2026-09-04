@@ -4,7 +4,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import GlassScene from "@/components/GlassScene.vue";
-import contactIcon from "@/asset/image/contact/face.svg";
 import decoShape from "@/asset/image/about-me/dec-01.png";
 import decoTall from "@/asset/image/about-me/dec-02.avif";
 
@@ -204,12 +203,6 @@ onUnmounted(() => {
         </section>
       </div>
     </section>
-
-    <aside class="contact-bar" aria-label="聯絡資訊">
-      <span>Behance</span>
-      <a href="mailto:fanworkk@gmail.com">fanworkk@gmail.com</a>
-      <img :src="contactIcon" alt="" />
-    </aside>
   </main>
 </template>
 
@@ -440,29 +433,6 @@ onUnmounted(() => {
   font-family: var(--font-tc);
 }
 
-.contact-bar {
-  position: fixed;
-  z-index: 30;
-  bottom: 40px;
-  left: 40px;
-  display: flex;
-  width: 472px;
-  height: 72px;
-  align-items: center;
-  gap: 24px;
-  padding: 8px 16px 8px 28px;
-  border-radius: 6px;
-  background: var(--color-primary);
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.contact-bar img {
-  width: 82px;
-  height: 56px;
-  margin-left: auto;
-}
-
 @media (max-width: 960px) {
   .info-hero__skills {
     width: min(86vw, 640px);
@@ -513,12 +483,6 @@ onUnmounted(() => {
 
   .info-block li span:nth-child(3) {
     grid-column: 2;
-  }
-
-  .contact-bar {
-    width: calc(100vw - 48px);
-    left: 24px;
-    bottom: 24px;
   }
 }
 

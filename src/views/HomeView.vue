@@ -3,7 +3,6 @@ import { onMounted, onUnmounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 
 import heroStart from "@/asset/image/destop/hero-filp-water-start.svg";
-import contactIcon from "@/asset/image/contact/face.svg";
 import featureOne from "@/asset/image/destop/feature-1.jpg";
 import featureTwo from "@/asset/image/destop/feature-2.JPG";
 import featureThree from "@/asset/image/destop/feature-3.jpg";
@@ -191,12 +190,6 @@ onUnmounted(() => {
         </div>
       </article>
     </section>
-
-    <aside class="contact-bar" aria-label="聯絡資訊">
-      <span>Behance</span>
-      <a href="mailto:fanworkk@gmail.com">fanworkk@gmail.com</a>
-      <img :src="contactIcon" alt="" />
-    </aside>
   </main>
 </template>
 
@@ -458,37 +451,6 @@ main {
   grid-column: 1 / -1;
   margin-top: 48px;
   font-family: var(--font-tc);
-}
-
-.contact-bar {
-  position: fixed;
-  z-index: 30;
-  bottom: 40px;
-  left: 40px;
-  display: flex;
-  width: 472px;
-  height: 72px;
-  align-items: center;
-  gap: 24px;
-  padding: 8px 16px 8px 28px;
-  border-radius: 6px;
-  background: var(--color-primary);
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.contact-bar img {
-  width: 82px;
-  height: 56px;
-  margin-left: auto;
-}
-
-.contact-bar__dot {
-  width: 9px;
-  height: 9px;
-  flex: 0 0 auto;
-  border: 2px solid currentcolor;
-  border-radius: 50%;
 }
 
 @media (prefers-reduced-motion: reduce) {

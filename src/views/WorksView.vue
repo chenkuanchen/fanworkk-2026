@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
 
-import contactIcon from "@/asset/image/contact/face.svg";
 import gameArtImage from "@/asset/image/works/G1.png";
 import motionImage from "@/asset/image/works/M1.png";
 import visualIdentityOne from "@/asset/image/works/V01.png";
@@ -15,12 +14,12 @@ import visualIdentityEight from "@/asset/image/works/V08.png";
 import websiteImage from "@/asset/image/works/W1.png";
 
 const categories = [
+  { name: "View All", count: 11 },
   { name: "Visual Identity", count: 8 },
   { name: "Game Art", count: 1 },
   { name: "Website", count: 1 },
   { name: "Motion", count: 1 },
   { name: "Shits", count: 0 },
-  { name: "View All", count: 11 },
 ];
 
 const works = [
@@ -104,12 +103,18 @@ const works = [
 ];
 
 const selectedCategory = ref("View All");
+const isExpanded = ref(true);
 const worksPage = ref(null);
+const visibleCategories = categories.filter((category) => category.count > 0);
 let imageObserver;
 
 function toggleCategory(category) {
-  selectedCategory.value =
-    selectedCategory.value === category ? null : category;
+  if (selectedCategory.value === category) {
+    isExpanded.value = !isExpanded.value;
+  } else {
+    selectedCategory.value = category;
+    isExpanded.value = true;
+  }
 }
 
 function getCategoryWorks(category) {
@@ -163,7 +168,7 @@ onUnmounted(() => {
   <main id="top" ref="worksPage" class="works-page">
     <div class="layout-grid" aria-hidden="true">
       <span
-        v-for="index in 7"
+        v-for="index in 6"
         :key="index"
         class="layout-grid__line"
         :style="{ '--line-index': index - 1 }"
@@ -171,65 +176,65 @@ onUnmounted(() => {
     </div>
 
     <section class="works-browser" aria-label="作品分類">
-      <template v-for="category in categories" :key="category.name">
+      <div class="works-filters">
         <button
+          v-for="category in visibleCategories"
+          :key="category.name"
           class="works-filter"
           type="button"
           :aria-pressed="selectedCategory === category.name"
+          :aria-expanded="
+            selectedCategory === category.name && isExpanded
+          "
           @click="toggleCategory(category.name)"
         >
           {{ category.name }}<sup v-if="category.count">{{ category.count }}</sup>
         </button>
+      </div>
 
-        <Transition name="works-panel" @after-leave="stopObservingImages">
-          <div
-            v-if="selectedCategory === category.name && category.count"
-            class="works-panel"
-          >
-            <div class="works-panel__inner">
-              <div class="works-grid">
-                <article
-                  v-for="work in getCategoryWorks(category.name)"
-                  :key="work.title"
-                  class="work-card"
-                >
-                  <div class="work-card__media">
-                    <img
-                      class="work-card__image"
-                      :src="work.image"
-                      :alt="work.title"
-                      @load="registerWorkImage"
-                    />
-                  </div>
-                  <div class="work-card__details">
-                    <h2>{{ work.title }}</h2>
-                    <p>{{ work.type }}</p>
-                    <p>{{ work.year }}</p>
-                  </div>
-                </article>
-              </div>
+      <Transition name="works-panel" @after-leave="stopObservingImages">
+        <div
+          v-if="isExpanded"
+          :key="selectedCategory"
+          class="works-panel"
+        >
+          <div class="works-panel__inner">
+            <div class="works-grid">
+              <article
+                v-for="work in getCategoryWorks(selectedCategory)"
+                :key="work.title"
+                class="work-card"
+              >
+                <div class="work-card__media">
+                  <img
+                    class="work-card__image"
+                    :src="work.image"
+                    :alt="work.title"
+                    @load="registerWorkImage"
+                  />
+                </div>
+                <div class="work-card__details">
+                  <h3>{{ work.title }}</h3>
+                  <p>{{ work.type }}</p>
+                  <p>{{ work.year }}</p>
+                </div>
+              </article>
             </div>
           </div>
-        </Transition>
-      </template>
+        </div>
+      </Transition>
     </section>
-
-    <aside class="contact-bar" aria-label="聯絡資訊">
-      <span>Behance</span>
-      <a href="mailto:fanworkk@gmail.com">fanworkk@gmail.com</a>
-      <img :src="contactIcon" alt="" />
-    </aside>
   </main>
 </template>
 
 <style scoped>
 .works-page {
   --page-grid-cell: calc(
-    (100cqi - 2 * var(--grid-inset) - var(--grid-pair)) / 6
+    (100cqi - 2 * var(--grid-inset) - var(--grid-pair)) / 5
   );
 
   min-height: 100vh;
-  padding: 150px 0;
+  padding: 120px 0;
   container-type: inline-size;
 }
 
@@ -261,12 +266,21 @@ onUnmounted(() => {
 .works-browser {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: 20% 80%;
+  align-items: start;
   padding: 0 calc(var(--grid-inset) + var(--grid-pair));
+}
+
+.works-filters {
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .works-filter {
   display: flex;
-  min-height: 86px;
+  width: 100%;
+  min-height: 48px;
   align-items: flex-start;
   padding: 0;
   border: 0;
@@ -274,21 +288,21 @@ onUnmounted(() => {
   color: inherit;
   cursor: pointer;
   font: inherit;
-  font-size: 64px;
+  font-size: 36px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.02em;
   text-align: left;
 }
 
-.works-filter sup {
-  margin-left: 2px;
-  font-size: 24px;
-  line-height: 1;
+.works-filter[aria-pressed="false"] {
+  color: #cdcdcd;
 }
 
-.works-filter:hover {
-  opacity: 0.55;
+.works-filter sup {
+  margin-left: 1px;
+  font-size: 14px;
+  line-height: 1;
 }
 
 .works-filter:focus-visible {
@@ -298,6 +312,8 @@ onUnmounted(() => {
 
 .works-panel {
   display: grid;
+  grid-column: 2;
+  grid-row: 1;
   grid-template-rows: 1fr;
   opacity: 1;
 }
@@ -322,9 +338,9 @@ onUnmounted(() => {
 
 .works-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 76px 16px;
-  margin-top: 94px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 72px 8px;
+  margin-bottom: 24px;
 }
 
 .work-card__media {
@@ -353,40 +369,21 @@ onUnmounted(() => {
 }
 
 .work-card__details {
-  min-height: 62px;
-  padding-top: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 17px;
-}
-
-.work-card__details h2 {
-  font-size: inherit;
-  font-weight: 700;
-  line-height: inherit;
-}
-
-.contact-bar {
-  position: fixed;
-  z-index: 30;
-  bottom: 40px;
-  left: 40px;
   display: flex;
-  width: 472px;
-  height: 72px;
-  align-items: center;
-  gap: 24px;
-  padding: 8px 16px 8px 28px;
-  border-radius: 6px;
-  background: var(--color-primary);
-  font-size: 20px;
-  font-weight: 700;
+  min-height: 62px;
+  flex-direction: column;
+  padding-top: 8px;
+  font-weight: 500;
 }
 
-.contact-bar img {
-  width: 82px;
-  height: 56px;
-  margin-left: auto;
+.work-card__details h3 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.work-card__details p {
+  font-size: 18px;
 }
 
 @media (prefers-reduced-motion: reduce) {
