@@ -13,6 +13,7 @@ const worksSection = ref(null);
 
 const works = [
   {
+    id: "w01",
     title: "台灣好樂園",
     image: featureOne,
     category: "Visual Identity, Event",
@@ -21,6 +22,7 @@ const works = [
       "以「全台樂園一站式探索」為核心，重新梳理網站資訊架構與使用體驗，讓使用者能更直覺地找到適合自己的樂園、活動與遊玩資訊。透過活潑親切的視覺語言與清晰的分類導覽，串聯全台樂園，打造兼具資訊性、探索感與趣味性的旅遊入口。",
   },
   {
+    id: "v01",
     title: "心動 ONE BUY ONE",
     image: featureTwo,
     category: "Visual Identity, Event",
@@ -29,6 +31,7 @@ const works = [
       "從城市街景延伸活動主視覺，整合戶外旗幟與宣傳素材，讓訊息自然進入日常移動的空間與節奏。",
   },
   {
+    id: "v03",
     title: "山派季",
     image: featureThree,
     category: "Visual Identity, Event",
@@ -185,7 +188,12 @@ onUnmounted(() => {
             <span>{{ work.category }}</span>
             <span>{{ work.year }}</span>
           </div>
-          <span class="work__link">View Project&nbsp; →</span>
+          <RouterLink
+            class="work__link"
+            :to="{ name: 'project', params: { id: work.id } }"
+          >
+            View Project&nbsp; →
+          </RouterLink>
           <p>{{ work.description }}</p>
         </div>
       </article>

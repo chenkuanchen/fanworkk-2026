@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
+import { RouterLink } from "vue-router";
 
 import gameArtImage from "@/asset/image/works/G1.png";
 import motionImage from "@/asset/image/works/M1.png";
@@ -24,6 +25,7 @@ const categories = [
 
 const works = [
   {
+    id: "v08",
     title: "COCOON 繭",
     category: "Visual Identity",
     type: "Visual Identity, Event",
@@ -31,6 +33,7 @@ const works = [
     image: visualIdentityEight,
   },
   {
+    id: "v07",
     title: "Blocto Brand Extension",
     category: "Visual Identity",
     type: "Visual Identity, Brand System Extension",
@@ -38,6 +41,7 @@ const works = [
     image: visualIdentitySeven,
   },
   {
+    id: "v06",
     title: "春來一直花",
     category: "Visual Identity",
     type: "Visual Identity, Event",
@@ -45,6 +49,7 @@ const works = [
     image: visualIdentitySix,
   },
   {
+    id: "v01",
     title: "心動 ONE BUY ONE",
     category: "Visual Identity",
     type: "Visual Identity, Event",
@@ -52,6 +57,7 @@ const works = [
     image: visualIdentityOne,
   },
   {
+    id: "v05",
     title: "山沐季",
     category: "Visual Identity",
     type: "Visual Identity, Event",
@@ -59,6 +65,7 @@ const works = [
     image: visualIdentityFive,
   },
   {
+    id: "v04",
     title: "山寧季",
     category: "Visual Identity",
     type: "Visual Identity, Event",
@@ -66,6 +73,7 @@ const works = [
     image: visualIdentityFour,
   },
   {
+    id: "v03",
     title: "山派季",
     category: "Visual Identity",
     type: "Visual Identity, Event",
@@ -73,6 +81,7 @@ const works = [
     image: visualIdentityThree,
   },
   {
+    id: "v02",
     title: "街區禮物交換所",
     category: "Visual Identity",
     type: "Visual Identity, Event",
@@ -80,6 +89,7 @@ const works = [
     image: visualIdentityTwo,
   },
   {
+    id: "w01",
     title: "台灣好樂園",
     category: "Website",
     type: "Website",
@@ -87,6 +97,7 @@ const works = [
     image: websiteImage,
   },
   {
+    id: "m01",
     title: "BlocToGo",
     category: "Motion",
     type: "Motion",
@@ -94,6 +105,7 @@ const works = [
     image: motionImage,
   },
   {
+    id: "g01",
     title: "Miss 迷失",
     category: "Game Art",
     type: "Game Art",
@@ -200,10 +212,11 @@ onUnmounted(() => {
         >
           <div class="works-panel__inner">
             <div class="works-grid">
-              <article
+              <RouterLink
                 v-for="work in getCategoryWorks(selectedCategory)"
                 :key="work.title"
                 class="work-card"
+                :to="{ name: 'project', params: { id: work.id } }"
               >
                 <div class="work-card__media">
                   <img
@@ -218,7 +231,7 @@ onUnmounted(() => {
                   <p>{{ work.type }}</p>
                   <p>{{ work.year }}</p>
                 </div>
-              </article>
+              </RouterLink>
             </div>
           </div>
         </div>
