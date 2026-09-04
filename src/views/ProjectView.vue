@@ -226,42 +226,44 @@ onBeforeUnmount(() => {
           </div>
         </dl>
 
-        <button
-          class="details-toggle"
-          type="button"
-          :aria-expanded="isDetailsExpanded"
-          aria-controls="project-details"
-          :aria-label="isDetailsExpanded ? '收合專案細節' : '展開專案細節'"
-          @click="isDetailsExpanded = !isDetailsExpanded"
+        <div
+          class="project-details-panel"
+          :class="{ 'project-details-panel--expanded': isDetailsExpanded }"
         >
-          <img
-            :src="isDetailsExpanded ? collapseIcon : expandIcon"
-            alt=""
-          />
-        </button>
-
-        <Transition name="project-details">
-          <section
-            v-if="isDetailsExpanded"
-            id="project-details"
-            class="project-details"
+          <div
+            class="project-details-clip"
+            :aria-hidden="!isDetailsExpanded"
           >
-            <div class="project-details__description">
-              <h2>Project Description</h2>
-              <p>{{ project.description }}</p>
-            </div>
-            <div class="project-details__credits">
-              <div>
+            <section id="project-details" class="project-details">
+              <div class="project-details__description">
+                <h2>Project Description</h2>
+                <p>{{ project.description }}</p>
+              </div>
+              <div class="project-details__credits">
                 <h2>Project Team</h2>
                 <p>{{ project.team }}</p>
+                <template v-if="project.source">
+                  <h2>Source</h2>
+                  <p>{{ project.source }}</p>
+                </template>
               </div>
-              <div v-if="project.source">
-                <h2>Source</h2>
-                <p>{{ project.source }}</p>
-              </div>
-            </div>
-          </section>
-        </Transition>
+            </section>
+          </div>
+
+          <button
+            class="details-toggle"
+            type="button"
+            :aria-expanded="isDetailsExpanded"
+            aria-controls="project-details"
+            :aria-label="isDetailsExpanded ? '收合專案細節' : '展開專案細節'"
+            @click="isDetailsExpanded = !isDetailsExpanded"
+          >
+            <img
+              :src="isDetailsExpanded ? collapseIcon : expandIcon"
+              alt=""
+            />
+          </button>
+        </div>
       </div>
     </header>
 
@@ -379,15 +381,15 @@ onBeforeUnmount(() => {
 
 .project-meta dt,
 .project-details h2 {
-  margin-bottom: 4px;
-  font-size: 16px;
+  margin-bottom: 8px;
+  font-size: 18px;
   font-weight: 400;
   line-height: 1.2;
 }
 
 .project-meta dd {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.35;
 }
@@ -403,8 +405,42 @@ onBeforeUnmount(() => {
   place-items: center;
 }
 
-.details-toggle {
+.project-details-panel {
+  display: grid;
+  width: 36px;
+  grid-template-rows: 0fr 36px;
   margin-top: 20px;
+  background: var(--color-primary);
+  transition:
+    width 700ms cubic-bezier(0.65, 0, 0.35, 1),
+    grid-template-rows 700ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.project-details-panel--expanded {
+  width: 100%;
+  grid-template-rows: 1fr 52px;
+}
+
+.project-details-clip {
+  min-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.project-details-panel--expanded .project-details-clip {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 280ms;
+}
+
+.details-toggle {
+  align-self: start;
+  transition: margin-left 700ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.project-details-panel--expanded .details-toggle {
+  margin-left: 16px;
 }
 
 .details-toggle img,
@@ -422,51 +458,38 @@ onBeforeUnmount(() => {
   outline-offset: 4px;
 }
 
+.details-toggle:focus-visible {
+  outline-offset: -4px;
+}
+
 .project-details {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 8px;
-  margin-top: 8px;
+  display: flex;
+  width: calc(
+    100cqi - 2 * var(--grid-inset) - 2 * var(--grid-pair) -
+      var(--project-grid-cell)
+  );
+  flex-direction: column;
+  gap: 48px;
   padding: 32px 36px 40px;
-  background: var(--color-primary);
-  overflow: hidden;
 }
 
 .project-details p {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
-  line-height: 1.55;
+  line-height: 1.8;
   white-space: pre-line;
 }
 
-.project-details__description {
+.project-details__description,
+.project-details__credits {
   display: grid;
   grid-template-columns: 1fr 3fr;
-  gap: 8px;
-  padding-right: 48px;
+  column-gap: 8px;
+  row-gap: 28px;
 }
 
 .project-details__credits {
-  display: grid;
   align-content: start;
-  gap: 28px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.project-details-enter-active,
-.project-details-leave-active {
-  max-height: 700px;
-  transition:
-    max-height 600ms cubic-bezier(0.65, 0, 0.35, 1),
-    opacity 300ms ease,
-    transform 600ms cubic-bezier(0.65, 0, 0.35, 1);
-}
-
-.project-details-enter-from,
-.project-details-leave-to {
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(-12px);
 }
 
 .project-gallery {
@@ -495,6 +518,20 @@ onBeforeUnmount(() => {
   background: var(--color-background);
 }
 
+.project-media:first-child {
+  aspect-ratio: 16 / 9;
+}
+
+.project-media:first-child img {
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-media:not(:first-child) {
+  width: 125%;
+  margin-left: -25%;
+}
+
 .project-media img {
   display: block;
   width: 100%;
@@ -507,10 +544,10 @@ onBeforeUnmount(() => {
 
 .project-footer {
   display: flex;
-  min-height: 180px;
+  min-height: 120px;
   align-items: center;
   justify-content: flex-end;
-  padding: 48px calc(var(--grid-inset) + var(--grid-pair));
+  padding: 42px calc(var(--grid-inset) + var(--grid-pair));
 }
 
 .back-link {
@@ -525,7 +562,7 @@ onBeforeUnmount(() => {
   position: fixed;
   z-index: 25;
   right: 20px;
-  bottom: 36px;
+  bottom: 42px;
 }
 
 .to-top-enter-active,
@@ -581,15 +618,18 @@ onBeforeUnmount(() => {
   }
 
   .project-meta,
-  .project-details,
   .project-details__description,
   .project-details__credits {
     grid-template-columns: 1fr;
     gap: 24px;
   }
 
-  .project-details__description {
-    padding-right: 0;
+  .project-details {
+    gap: 24px;
+  }
+
+  .project-details {
+    width: calc(100cqi - 48px);
   }
 
   .project-gallery {
@@ -599,11 +639,17 @@ onBeforeUnmount(() => {
   .project-code {
     margin-bottom: 24px;
   }
+
+  .project-media:not(:first-child) {
+    width: 100%;
+    margin-left: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .project-details-enter-active,
-  .project-details-leave-active,
+  .project-details-panel,
+  .project-details-clip,
+  .details-toggle,
   .to-top-enter-active,
   .to-top-leave-active {
     transition: none;

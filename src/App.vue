@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: var(--color-primary);
+  background-color: #FF3B2C;
 }
 
 @media (hover: hover) and (pointer: fine) {
