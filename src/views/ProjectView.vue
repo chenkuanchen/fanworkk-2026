@@ -92,17 +92,6 @@ const projects = [
     team: "CD: Kai\nD: 陳冠臻",
   },
   {
-    id: "v08",
-    code: "Ø-V08",
-    title: "COCOON 繭",
-    year: "2023",
-    category: "Visual Identity, Event",
-    organizer: "",
-    description:
-      "昆蟲經歷化蛹，蛹期間蟲體內會進行劇烈重組。從行動到飲食方式都與幼蟲期大不相同。繭即是乘載反應的變化爐。\n\n人類的感官體驗限於身體之中，在經過人與人、人與科技不斷的交流，開闢出一個虛擬卻能以感官接受的疆土。\n\n互動設計透過深入解析使用者行為、探索新的需求，創造出更貼近人性的產物，在不可變的現實中組織出人與世界嶄新的互動模式。",
-    team: "D: 陳冠臻、盧昱瑄、呂亞衡",
-  },
-  {
     id: "g01",
     code: "Ø-G01",
     title: "Miss 迷失",
@@ -137,25 +126,10 @@ const projects = [
   },
 ];
 
-const missImageModules = import.meta.glob(
-  "@/asset/image/project/G01-Miss/*.{jpg,jpeg,png,webp}",
+const projectMediaModules = import.meta.glob(
+  "@/asset/image/project/**/*.{jpg,jpeg,png,webp,gif,mp4}",
   { eager: true, import: "default" },
 );
-const missImages = Object.entries(missImageModules)
-  .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
-  .map(([, src]) => src);
-const placeholderRatios = [
-  "16 / 9",
-  "21 / 8",
-  "16 / 10",
-  "3 / 2",
-  "16 / 9",
-  "16 / 9",
-  "3 / 2",
-  "16 / 10",
-  "16 / 9",
-  "3 / 2",
-];
 
 const route = useRoute();
 const isDetailsExpanded = ref(false);
@@ -164,18 +138,19 @@ const project = computed(() =>
   projects.find((item) => item.id === String(route.params.id).toLowerCase()),
 );
 const media = computed(() => {
-  if (project.value?.id === "g01") {
-    return missImages.map((src, index) => ({
-      id: src,
+  if (!project.value) return [];
+
+  return Object.entries(projectMediaModules)
+    .filter(([path]) =>
+      path.toLowerCase().includes(`/${project.value.id}-`),
+    )
+    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
+    .map(([path, src], index) => ({
+      id: path,
       src,
       alt: `${project.value.title} 專案圖片 ${index + 1}`,
+      isVideo: path.toLowerCase().endsWith(".mp4"),
     }));
-  }
-
-  return placeholderRatios.map((aspectRatio, index) => ({
-    id: `placeholder-${index}`,
-    aspectRatio,
-  }));
 });
 
 function updateToTopVisibility() {
@@ -274,10 +249,16 @@ onBeforeUnmount(() => {
           v-for="item in media"
           :key="item.id"
           class="project-media"
-          :class="{ 'project-media--placeholder': !item.src }"
-          :style="item.aspectRatio ? { aspectRatio: item.aspectRatio } : null"
         >
-          <img v-if="item.src" :src="item.src" :alt="item.alt" />
+          <video
+            v-if="item.isVideo"
+            :src="item.src"
+            :aria-label="item.alt"
+            controls
+            playsinline
+            preload="metadata"
+          ></video>
+          <img v-else :src="item.src" :alt="item.alt" />
         </figure>
       </div>
     </section>
@@ -522,7 +503,8 @@ onBeforeUnmount(() => {
   aspect-ratio: 16 / 9;
 }
 
-.project-media:first-child img {
+.project-media:first-child img,
+.project-media:first-child video {
   height: 100%;
   object-fit: cover;
 }
@@ -532,14 +514,11 @@ onBeforeUnmount(() => {
   margin-left: -25%;
 }
 
-.project-media img {
+.project-media img,
+.project-media video {
   display: block;
   width: 100%;
   height: auto;
-}
-
-.project-media--placeholder {
-  min-height: 280px;
 }
 
 .project-footer {

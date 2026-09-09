@@ -19,8 +19,8 @@ import { RouterLink } from "vue-router";
   position: fixed;
   z-index: 20;
   top: 34px;
-  right: var(--grid-inset);
-  left: calc(var(--grid-inset) + var(--grid-pair));
+  right: calc(var(--grid-inset) + var(--grid-pair));
+  left: var(--grid-inset);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -30,9 +30,18 @@ import { RouterLink } from "vue-router";
   mix-blend-mode: difference;
 }
 
+.site-header__brand {
+  margin-left: var(--grid-pair);
+}
+
 .site-header__nav {
+  position: relative;
   display: flex;
   width: 20%;
-  justify-content: space-between;
+}
+
+.site-header__nav a:last-child {
+  position: absolute;
+  left: 100%;
 }
 </style>

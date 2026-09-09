@@ -11,12 +11,11 @@ import visualIdentityFour from "@/asset/image/works/V04.png";
 import visualIdentityFive from "@/asset/image/works/V05.png";
 import visualIdentitySix from "@/asset/image/works/V06.png";
 import visualIdentitySeven from "@/asset/image/works/V07.png";
-import visualIdentityEight from "@/asset/image/works/V08.png";
 import websiteImage from "@/asset/image/works/W1.png";
 
 const categories = [
-  { name: "View All", count: 11 },
-  { name: "Visual Identity", count: 8 },
+  { name: "View All", count: 10 },
+  { name: "Visual Identity", count: 7 },
   { name: "Game Art", count: 1 },
   { name: "Website", count: 1 },
   { name: "Motion", count: 1 },
@@ -24,14 +23,6 @@ const categories = [
 ];
 
 const works = [
-  {
-    id: "v08",
-    title: "COCOON 繭",
-    category: "Visual Identity",
-    type: "Visual Identity, Event",
-    year: "2023",
-    image: visualIdentityEight,
-  },
   {
     id: "v07",
     title: "Blocto Brand Extension",
