@@ -152,7 +152,7 @@ onMounted(() => {
       });
     },
     {
-      rootMargin: "0px 0px -20% 0px",
+      rootMargin: "0px 0px -0% 0px",
       threshold: 0.2,
     },
   );
@@ -271,7 +271,7 @@ onUnmounted(() => {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 20% 80%;
+  grid-template-columns: var(--page-grid-cell) minmax(0, 1fr);
   align-items: start;
   padding: 0 calc(var(--grid-inset) + var(--grid-pair));
 }
@@ -315,6 +315,8 @@ onUnmounted(() => {
 }
 
 .works-panel {
+  position: relative;
+  left: 1px;
   display: grid;
   grid-column: 2;
   grid-row: 1;
@@ -343,7 +345,7 @@ onUnmounted(() => {
 .works-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 72px 8px;
+  gap: 72px var(--grid-pair);
   margin-bottom: 24px;
 }
 
@@ -387,7 +389,7 @@ onUnmounted(() => {
 }
 
 .work-card__details p {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 @media (prefers-reduced-motion: reduce) {

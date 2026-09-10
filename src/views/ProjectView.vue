@@ -134,6 +134,8 @@ const projectMediaModules = import.meta.glob(
 const route = useRoute();
 const isDetailsExpanded = ref(false);
 const showToTop = ref(false);
+const projectPage = ref(null);
+let imageObserver;
 const project = computed(() =>
   projects.find((item) => item.id === String(route.params.id).toLowerCase()),
 );
@@ -161,18 +163,51 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function registerProjectMedia(event) {
+  const mediaElement = event.currentTarget.parentElement;
+  if (!mediaElement.matches(".project-media:first-child")) return;
+
+  mediaElement.classList.add("project-media--loaded");
+  imageObserver?.observe(mediaElement);
+}
+
 onMounted(() => {
   window.addEventListener("scroll", updateToTopVisibility, { passive: true });
   updateToTopVisibility();
+
+  if (
+    !projectPage.value ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return;
+  }
+
+  imageObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.add("project-media--visible");
+        imageObserver.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.2 },
+  );
+
+  const coverElement = projectPage.value.querySelector(
+    ".project-media:first-child",
+  );
+  if (coverElement) imageObserver.observe(coverElement);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", updateToTopVisibility);
+  imageObserver?.disconnect();
 });
 </script>
 
 <template>
-  <main v-if="project" id="top" class="project-page">
+  <main v-if="project" id="top" ref="projectPage" class="project-page">
     <div class="layout-grid" aria-hidden="true">
       <span
         v-for="index in 6"
@@ -257,8 +292,14 @@ onBeforeUnmount(() => {
             controls
             playsinline
             preload="metadata"
+            @loadedmetadata="registerProjectMedia"
           ></video>
-          <img v-else :src="item.src" :alt="item.alt" />
+          <img
+            v-else
+            :src="item.src"
+            :alt="item.alt"
+            @load="registerProjectMedia"
+          />
         </figure>
       </div>
     </section>
@@ -345,14 +386,15 @@ onBeforeUnmount(() => {
 }
 
 .project-summary {
-  width: 80%;
+  width: calc(100% - var(--project-grid-cell) - 1px);
   margin-top: 94px;
-  margin-left: 20%;
+  margin-left: calc(var(--project-grid-cell) + 1px);
 }
 
 .project-meta {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr;
+  grid-template-columns:
+    var(--project-grid-cell) var(--project-grid-cell) minmax(0, 1fr);
   min-height: 72px;
 }
 
@@ -475,7 +517,7 @@ onBeforeUnmount(() => {
 
 .project-gallery {
   display: grid;
-  grid-template-columns: 20% 80%;
+  grid-template-columns: calc(var(--project-grid-cell) + 1px) minmax(0, 1fr);
   align-items: start;
   margin-top: 64px;
   padding: 0 calc(var(--grid-inset) + var(--grid-pair));
@@ -489,7 +531,7 @@ onBeforeUnmount(() => {
 
 .project-media-list {
   display: grid;
-  gap: 48px;
+  gap: 0;
 }
 
 .project-media {
@@ -499,8 +541,22 @@ onBeforeUnmount(() => {
   background: var(--color-background);
 }
 
+.project-media--loaded.project-media--visible {
+  animation: project-media-in 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes project-media-in {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 .project-media:first-child {
   aspect-ratio: 16 / 9;
+  margin-bottom: 60px;
+  opacity: 0;
+  transform: translate3d(0, 48px, 0);
 }
 
 .project-media:first-child img,
@@ -510,8 +566,8 @@ onBeforeUnmount(() => {
 }
 
 .project-media:not(:first-child) {
-  width: 125%;
-  margin-left: -25%;
+  width: calc(100% + var(--project-grid-cell));
+  margin-left: calc(-1 * var(--project-grid-cell));
 }
 
 .project-media img,
@@ -632,6 +688,12 @@ onBeforeUnmount(() => {
   .to-top-enter-active,
   .to-top-leave-active {
     transition: none;
+  }
+
+  .project-media:first-child {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 </style>
