@@ -23,18 +23,50 @@
 }
 
 @font-face {
-  font-family: 'Taipei Sans TC Beta';
-  src: url('../asset/font/TaipeiSansTCBeta/TaipeiSansTCBeta-Regular.ttf') format('truetype');
+  font-family: 'Toge Gothic';
+  src: url('../asset/font/TogeGothic/06TogeGothic-Bold.otf') format('opentype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Zen Kaku Gothic New';
+  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Light.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Zen Kaku Gothic New';
+  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Regular.ttf') format('truetype');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Taipei Sans TC Beta';
-  src: url('../asset/font/TaipeiSansTCBeta/TaipeiSansTCBeta-Bold.ttf') format('truetype');
+  font-family: 'Zen Kaku Gothic New';
+  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Medium.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Zen Kaku Gothic New';
+  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Bold.ttf') format('truetype');
   font-style: normal;
   font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Zen Kaku Gothic New';
+  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Black.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 900;
   font-display: swap;
 }
 
@@ -46,7 +78,7 @@
   --grid-inset: 80px;
   --grid-pair: 8px;
   --font-en: 'Satoshi';
-  --font-tc: 'Taipei Sans TC Beta';
+  --font-tc: 'Zen Kaku Gothic New';
 }
 
 * {

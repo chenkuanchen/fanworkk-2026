@@ -19,16 +19,17 @@ const works = [
     category: "Visual Identity, Event",
     year: "2023",
     description:
-      "以「全台樂園一站式探索」為核心，重新梳理網站資訊架構與使用體驗，讓使用者能更直覺地找到適合自己的樂園、活動與遊玩資訊。透過活潑親切的視覺語言與清晰的分類導覽，串聯全台樂園，打造兼具資訊性、探索感與趣味性的旅遊入口。",
+      "以「全台樂園一站式探索」為核心，重新梳理網站資訊架構與使用體驗，透過清晰分類與直覺導覽，串聯全台樂園、活動與遊玩資訊。以活潑親切的視覺語言，打造兼具資訊性、探索感與趣味性的樂園旅遊入口。",
   },
   {
     id: "v01",
-    title: "心動 ONE BUY ONE",
+    title: "心動 ",
+    titleEn: "ONE BUY ONE",
     image: featureTwo,
     category: "Visual Identity, Event",
     year: "2023",
     description:
-      "從城市街景延伸活動主視覺，整合戶外旗幟與宣傳素材，讓訊息自然進入日常移動的空間與節奏。",
+      "以年度販促檔期為契機，從時節趨勢與品牌性格出發，重新詮釋數位時代的流行語彙。透過畫面重組、錯位與堆疊，打造超現實的視覺結構，以趣味視角呈現自在愉悅的消費情境，展現勤美誠品年輕活力的品牌性格。",
   },
   {
     id: "v03",
@@ -37,7 +38,7 @@ const works = [
     category: "Visual Identity, Event",
     year: "2023",
     description:
-      "以山林與戶外文化為核心建立活動識別，將自然質地轉化為清楚有力的視覺，並延伸至現場展示。",
+      "以「自然躁動的 2025 告別派對」為題，揉合城市節奏與自然感知，將冬日山林轉化為歲末團聚的視覺盛宴。設計透過躁點的堆疊、聚散與交錯組構畫面，在秩序與失序之間取得平衡，營造自然與城市交織而生的躁動感。",
   },
 ];
 
@@ -107,7 +108,7 @@ onMounted(() => {
       });
     },
     {
-      rootMargin: "0px 0px -20% 0px",
+      rootMargin: "0px 0px 10% 0px",
       threshold: 0.2,
     },
   );
@@ -155,11 +156,8 @@ onUnmounted(() => {
           </div>
           <div class="hero-card__face hero-card__face--back">
             <p class="hero-card__intro">
-              我是冠臻，多媒體設計師，現居台中。<br />
-              作品橫跨動畫、3D 以及平面設計。<br />
-              喜歡探究有趣的設計數位體驗，善於<br />
-              轉譯訊息為多面向、能被感受與記<br />
-              憶的產物。
+              多媒體設計師，現居台中。<br />
+              作品橫跨動畫、3D 以及平面。喜歡探究有趣的設計數位體驗，善於轉譯訊息為多面向、能被感受與記憶的產物。
             </p>
             <RouterLink class="hero-card__more" :to="{ name: 'info' }">
               read more&nbsp; →
@@ -173,12 +171,14 @@ onUnmounted(() => {
       <h1 class="featured-works__heading">feature work</h1>
 
       <article v-for="work in works" :key="work.title" class="work">
-        <h2 class="work__title">{{ work.title }}</h2>
+        <h2 class="work__title">
+          {{ work.title }}<span v-if="work.titleEn" class="work__title-en"> {{ work.titleEn }}</span>
+        </h2>
         <div class="work__media">
           <img
             class="work__image"
             :src="work.image"
-            :alt="work.title"
+            :alt="work.titleEn ? `${work.title} ${work.titleEn}` : work.title"
             @load="revealFeaturedImage"
           />
         </div>
@@ -268,7 +268,7 @@ main {
 
 .hero-card__face {
   position: absolute;
-  inset: 0;
+  inset: 5%;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -276,19 +276,22 @@ main {
 .hero-card__face--back {
   overflow: hidden;
   border-radius: 50% 50% 0 0 / 25.5% 25.5% 0 0;
+  border: 36px solid #000000;
   background: #fff;
-  box-shadow: 0 12px 24px rgb(0 0 0 / 16%);
+  /* box-shadow: 0 12px 24px rgb(0 0 0 / 16%); */
   transform: rotateY(180deg);
 }
 
 .hero-card__intro {
   position: absolute;
-  top: 36.5%;
-  right: 13.7%;
-  left: 13.7%;
+  top: 50%;
+  left: 50%;
+  width: calc(100% - 27.4%);
   font-family: var(--font-tc);
   font-size: 4.2cqi;
   line-height: 1.85;
+  font-weight: 500;
+  transform: translate(-50%, -50%);
 }
 
 .hero-card__more {
@@ -320,8 +323,10 @@ main {
   );
   
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  display: flow-root;
   
+  margin-top: -100vh;
   padding: 0 var(--grid-inset);
   background-color: var(--color-background);
 }
@@ -329,7 +334,7 @@ main {
 .featured-works::before {
   position: absolute;
   inset: 0 var(--grid-inset);
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='8' height='8' fill='%2300c3d0'/%3E%3C/svg%3E");
   background-position: 0 0;
@@ -338,19 +343,13 @@ main {
   content: "";
 }
 
-.featured-works__heading,
-.featured-works .work {
-  /* background-color: blue; */
-  /* background-color: aqua; */
-  position: relative;
-  z-index: 1;
-}
-
 .featured-works__heading {
   height: var(--work-grid-cell);
   padding-top: var(--grid-pair);
   padding-left: var(--grid-pair);
-  font-size: 36px;
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1;
 }
 
@@ -361,15 +360,29 @@ main {
   margin-bottom: var(--work-grid-cell);
 }
 
+.work:last-child {
+  margin-bottom: 120px;
+}
+
 .work__title {
   /* background-color: yellowgreen; */
   position: sticky;
+  z-index: 1;
   top: 400px; /*調整黏住高度*/
   padding-right: 28px;
   padding-left: var(--grid-pair);
-  font-family: var(--font-tc);
-  font-size: 36px;
+  color: #fff;
+  font-family: 'Toge Gothic', var(--font-tc), sans-serif;
+  font-size: 48px;
   line-height: 1.2;
+  letter-spacing: 0.05em;
+  mix-blend-mode: difference;
+  white-space: nowrap;
+}
+
+.work__title-en {
+  font-family: var(--font-en), sans-serif;
+  letter-spacing: -0.03em;
 }
 
 .work__media {
@@ -380,37 +393,16 @@ main {
   margin-top: var(--grid-pair);
   margin-left: var(--grid-pair);
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 600ms ease-out,
+    transform 600ms ease-out;
 }
 
-.work__media::before,
-.work__media::after {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  background: var(--color-background);
-  content: "";
-  pointer-events: none;
-  transform: scaleY(1);
-  transform-origin: top;
-  will-change: transform;
-}
-
-.work__media::before {
-  left: 0;
-}
-
-.work__media::after {
-  right: 0;
-}
-
-.work__media--loaded.work__media--visible::before {
-  animation: reveal-image 1.2s 250ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
-}
-
-.work__media--loaded.work__media--visible::after {
-  animation: reveal-image 1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+.work__media--loaded.work__media--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .work__image {
@@ -421,23 +413,28 @@ main {
   will-change: transform;
 }
 
-@keyframes reveal-image {
-  to {
-    transform: scaleY(0);
-  }
-}
-
 .work__details {
   display: grid;
   grid-column: 4 / -1;
   grid-template-columns: 1fr auto;
   width: calc(100% - var(--grid-pair));
   margin-left: var(--grid-pair);
+  padding: 24px;
   align-self: center;
   align-items: start;
   column-gap: 24px;
-  font-size: 20px;
-  line-height: 30px;
+  font-size: 18px;
+  line-height: 32px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 600ms ease-out,
+    transform 600ms ease-out;
+}
+
+.work__media--loaded.work__media--visible + .work__details {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .work__meta {
@@ -446,7 +443,7 @@ main {
   gap: 10px;
   font-size: 20px;
   font-weight: 700;
-  line-height: 18px;
+  line-height: 21px;
 }
 
 .work__link {
@@ -458,12 +455,17 @@ main {
 .work__details p {
   grid-column: 1 / -1;
   margin-top: 48px;
+  font-weight: 500;
   font-family: var(--font-tc);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero {
     height: 100vh;
+  }
+
+  .featured-works {
+    margin-top: 0;
   }
 
   .hero-card {
@@ -481,10 +483,16 @@ main {
     will-change: auto;
   }
 
-  .work__media::before,
-  .work__media::after {
-    animation: none;
-    transform: scaleY(0);
+  .work__media {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .work__details {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 </style>

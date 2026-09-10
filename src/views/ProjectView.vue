@@ -364,7 +364,7 @@ onBeforeUnmount(() => {
 .project-details h2 {
   margin-bottom: 8px;
   font-size: 18px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.2;
 }
 

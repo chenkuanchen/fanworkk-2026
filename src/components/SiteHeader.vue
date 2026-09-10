@@ -40,6 +40,10 @@ import { RouterLink } from "vue-router";
   width: 20%;
 }
 
+.site-header__nav a {
+  transform: translateX(-100%);
+}
+
 .site-header__nav a:last-child {
   position: absolute;
   left: 100%;
