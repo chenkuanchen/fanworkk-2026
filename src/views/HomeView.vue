@@ -1,11 +1,15 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
 import { RouterLink } from "vue-router";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import heroStart from "@/asset/image/destop/hero-filp-water-start.svg";
 import featureOne from "@/asset/image/destop/feature-1.jpg";
 import featureTwo from "@/asset/image/destop/feature-2.JPG";
 import featureThree from "@/asset/image/destop/feature-3.jpg";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const heroCard = ref(null);
 const heroYear = ref(null);
@@ -44,6 +48,7 @@ const works = [
 
 let animationFrame;
 let imageObserver;
+let scaleContext;
 let reduceMotion = false;
 
 function updateHero() {
@@ -98,6 +103,23 @@ onMounted(() => {
   reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduceMotion) return;
 
+  scaleContext = gsap.context(() => {
+    gsap.fromTo(
+      worksSection.value,
+      { scale: 0.8 },
+      {
+        scale: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: worksSection.value,
+          start: "top bottom",
+          end: "top 80%",
+          scrub: 0.5,
+        },
+      },
+    );
+  }, worksSection.value);
+
   imageObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -126,12 +148,14 @@ onUnmounted(() => {
   window.removeEventListener("scroll", requestScrollUpdate);
   window.removeEventListener("resize", requestScrollUpdate);
   imageObserver?.disconnect();
+  scaleContext?.revert();
 
   if (animationFrame) {
     window.cancelAnimationFrame(animationFrame);
   }
 });
 </script>
+
 
 <template>
   <main>
@@ -329,6 +353,9 @@ main {
   margin-top: -100vh;
   padding: 0 var(--grid-inset);
   background-color: var(--color-background);
+  box-shadow: 0 0 64px rgb(0 0 0 / 18%);
+  transform-origin: top center;
+  will-change: transform;
 }
 
 .featured-works::before {
