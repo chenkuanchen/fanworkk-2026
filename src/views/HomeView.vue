@@ -195,9 +195,17 @@ onUnmounted(() => {
       <h1 class="featured-works__heading">feature work</h1>
 
       <article v-for="work in works" :key="work.title" class="work">
-        <h2 class="work__title">
-          {{ work.title }}<span v-if="work.titleEn" class="work__title-en"> {{ work.titleEn }}</span>
-        </h2>
+        <div class="work__sticky-scope">
+          <div class="work__sticky-group">
+            <h2 class="work__title">
+              {{ work.title }}<span v-if="work.titleEn" class="work__title-en"> {{ work.titleEn }}</span>
+            </h2>
+            <div class="work__meta work__meta--mobile">
+              <span>{{ work.category }}</span>
+              <span>{{ work.year }}</span>
+            </div>
+          </div>
+        </div>
         <div class="work__media">
           <img
             class="work__image"
@@ -208,7 +216,7 @@ onUnmounted(() => {
         </div>
 
         <div class="work__details">
-          <div class="work__meta">
+          <div class="work__meta work__meta--desktop">
             <span>{{ work.category }}</span>
             <span>{{ work.year }}</span>
           </div>
@@ -391,6 +399,11 @@ main {
   margin-bottom: 120px;
 }
 
+.work__sticky-scope,
+.work__sticky-group {
+  display: contents;
+}
+
 .work__title {
   /* background-color: yellowgreen; */
   position: sticky;
@@ -473,6 +486,10 @@ main {
   line-height: 21px;
 }
 
+.work__meta--mobile {
+  display: none;
+}
+
 .work__link {
   font-size: 20px;
   font-weight: 700;
@@ -484,6 +501,129 @@ main {
   margin-top: 48px;
   font-weight: 500;
   font-family: var(--font-tc);
+}
+
+@media (max-width: 600px) {
+  main {
+    --grid-inset: 8px;
+    --grid-pair: 4px;
+  }
+
+  .hero__sticky {
+    min-height: 0;
+  }
+
+  .hero-card {
+    width: min(272px, 76vw);
+  }
+
+  .hero-card__face--back {
+    border-width: 24px;
+  }
+
+  .hero__year {
+    top: calc(50vh + 240px);
+    right: auto;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+
+  .featured-works__heading {
+    padding-left: 0;
+    font-size: 20px;
+  }
+
+  .featured-works::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='4' height='4' fill='%2300c3d0'/%3E%3C/svg%3E");
+  }
+
+  .work {
+    grid-template-columns: repeat(5, var(--work-grid-cell));
+    grid-template-rows:
+      calc(5 * var(--work-grid-cell))
+      var(--work-grid-cell)
+      calc(3 * var(--work-grid-cell));
+  }
+
+  .work__sticky-scope {
+    display: block;
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: stretch;
+  }
+
+  .work__sticky-group {
+    position: static;
+    display: grid;
+    align-content: start;
+    color: #fff;
+    mix-blend-mode: difference;
+  }
+
+  .work__title {
+    position: static;
+    grid-column: 1;
+    grid-row: 1;
+    padding-right: 0;
+    padding-left: 0;
+    font-size: 20px;
+    mix-blend-mode: normal;
+  }
+
+  .work__media {
+    grid-column: 2 / span 3;
+    grid-row: 1;
+    height: calc(4 * var(--work-grid-cell) - var(--grid-pair));
+    margin-top: calc(var(--work-grid-cell) + var(--grid-pair));
+  }
+
+  .work__details {
+    display: contents;
+    opacity: 1;
+    transform: none;
+  }
+
+  .work__meta {
+    position: static;
+    z-index: 1;
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    gap: 2px;
+    margin-top: 36px;
+    font-size: 12px;
+    line-height: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .work__meta--mobile {
+    display: flex;
+  }
+
+  .work__meta--desktop {
+    display: none;
+  }
+
+  .work__link {
+    grid-column: 4 / span 2;
+    grid-row: 2;
+    justify-self: end;
+    margin-top: 24px;
+    padding-right: var(--grid-pair);
+    font-size: 12px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .work__details p {
+    grid-column: 2 / span 3;
+    grid-row: 3;
+    margin-top: 24px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

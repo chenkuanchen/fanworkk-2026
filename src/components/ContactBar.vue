@@ -51,4 +51,27 @@ import contactIcon from "@/asset/image/contact/face.svg";
     bottom: 24px;
   }
 }
+
+@media (max-width: 600px) {
+  .contact-bar {
+    bottom: 32px;
+    left: 50%;
+    width: min(280px, calc(100vw - 48px));
+    height: 48px;
+    gap: 8px;
+    padding: 6px 10px 6px 14px;
+    font-size: 12px;
+    transform: translateX(-50%);
+  }
+
+  .contact-bar__text {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .contact-bar img {
+    width: 50px;
+    height: 34px;
+  }
+}
 </style>

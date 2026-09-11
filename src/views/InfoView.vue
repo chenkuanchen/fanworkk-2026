@@ -121,7 +121,7 @@ onUnmounted(() => {
         >
           Graphic Design (Adobe Illustrator) (Adobe Photoshop),
           Web Design (Figma), 3D (Blender), Motion Design (Adobe After
-          Effects),Game Art (Unity).
+          Effects), Game Art (Unity).
         </p>
 
         <img
@@ -483,6 +483,113 @@ onUnmounted(() => {
 
   .info-block li span:nth-child(3) {
     grid-column: 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .info-page {
+    --grid-inset: 8px;
+    --grid-pair: 4px;
+  }
+
+  .info-hero {
+    height: calc(150vh - 32px);
+  }
+
+  .info-hero__sticky {
+    min-height: 0;
+  }
+
+  .info-hero__skills {
+    top: 46.5%;
+    width: calc(100% - 24px);
+    font-size: 32px;
+    line-height: 1.5;
+    font-weight: 400;
+    text-align: left;
+  }
+
+  .info-hero__intro {
+    top: 60%;
+    left: var(--grid-inset);
+    width: calc(4 * var(--page-grid-cell) - var(--grid-pair));
+  }
+
+  .info-hero__intro h1 {
+    margin-bottom: 32px;
+    font-size: 32px;
+  }
+
+  .info-hero__intro p {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.9;
+  }
+
+  .info-hero__deco {
+    top: calc(50% - 120px);
+    width: 420px;
+    opacity: 0.14;
+  }
+
+  .info-details {
+    min-height: 0;
+    padding: 100px var(--grid-inset) calc(2 * var(--detail-cell));
+  }
+
+  .info-details::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='4' height='4' fill='%2300c3d0'/%3E%3C/svg%3E");
+  }
+
+  .info-details__media {
+    position: absolute;
+    top: calc(var(--detail-cell) + var(--grid-pair));
+    right: 0;
+    bottom: auto;
+    left: calc(var(--grid-inset) + 4 * var(--detail-cell));
+    width: auto;
+    height: calc(15 * var(--detail-cell) - var(--grid-pair));
+    max-height: none;
+    margin: 0;
+  }
+
+  .info-details__media img {
+    min-height: 0;
+  }
+
+  .info-details__content {
+    width: calc(4 * var(--detail-cell) - var(--grid-pair));
+  }
+
+  .info-block {
+    margin-bottom: 90px;
+  }
+
+  .info-block:last-child {
+    margin-bottom: 0;
+  }
+
+  .info-block h2 {
+    margin-bottom: 32px;
+    padding-left: 0;
+    font-size: 32px;
+  }
+
+  .info-block__cols {
+    display: none;
+  }
+
+  .info-block li {
+    display: block;
+    margin-bottom: 18px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.55;
+  }
+
+  .info-block li > span {
+    display: block;
+    padding-left: 0;
   }
 }
 

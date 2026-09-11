@@ -11,18 +11,27 @@ import visualIdentityFour from "@/asset/image/works/V04.png";
 import visualIdentityFive from "@/asset/image/works/V05.png";
 import visualIdentitySix from "@/asset/image/works/V06.png";
 import visualIdentitySeven from "@/asset/image/works/V07.png";
+import visualIdentityEight from "@/asset/image/works/V08.png";
 import websiteImage from "@/asset/image/works/W1.png";
 
 const categories = [
-  { name: "View All", count: 10 },
-  { name: "Visual Identity", count: 7 },
-  { name: "Game Art", count: 1 },
+  { name: "View All", count: 11 },
+  { name: "Visual Identity", count: 8 },
+  { name: "Game Art", mobileName: "3D Arts", count: 1 },
   { name: "Website", count: 1 },
   { name: "Motion", count: 1 },
   { name: "Shits", count: 0 },
 ];
 
 const works = [
+  {
+    id: null,
+    title: "COOCON 繭",
+    category: "Visual Identity",
+    type: "Visual Identity, Event",
+    year: "2023",
+    image: visualIdentityEight,
+  },
   {
     id: "v07",
     title: "Blocto Brand Extension",
@@ -108,7 +117,6 @@ const works = [
 const selectedCategory = ref("View All");
 const isExpanded = ref(true);
 const worksPage = ref(null);
-const visibleCategories = categories.filter((category) => category.count > 0);
 let imageObserver;
 
 function toggleCategory(category) {
@@ -181,9 +189,10 @@ onUnmounted(() => {
     <section class="works-browser" aria-label="作品分類">
       <div class="works-filters">
         <button
-          v-for="category in visibleCategories"
+          v-for="category in categories"
           :key="category.name"
           class="works-filter"
+          :class="{ 'works-filter--empty': category.count === 0 }"
           type="button"
           :aria-pressed="selectedCategory === category.name"
           :aria-expanded="
@@ -191,7 +200,13 @@ onUnmounted(() => {
           "
           @click="toggleCategory(category.name)"
         >
-          {{ category.name }}<sup v-if="category.count">{{ category.count }}</sup>
+          <span class="works-filter__label works-filter__label--desktop">
+            {{ category.name }}
+          </span>
+          <span class="works-filter__label works-filter__label--mobile">
+            {{ category.mobileName ?? category.name }}
+          </span>
+          <sup v-if="category.count">{{ category.count }}</sup>
         </button>
       </div>
 
@@ -203,11 +218,16 @@ onUnmounted(() => {
         >
           <div class="works-panel__inner">
             <div class="works-grid">
-              <RouterLink
+              <component
                 v-for="work in getCategoryWorks(selectedCategory)"
                 :key="work.title"
+                :is="work.id ? RouterLink : 'article'"
                 class="work-card"
-                :to="{ name: 'project', params: { id: work.id } }"
+                :to="
+                  work.id
+                    ? { name: 'project', params: { id: work.id } }
+                    : null
+                "
               >
                 <div class="work-card__media">
                   <img
@@ -222,7 +242,7 @@ onUnmounted(() => {
                   <p>{{ work.type }}</p>
                   <p>{{ work.year }}</p>
                 </div>
-              </RouterLink>
+              </component>
             </div>
           </div>
         </div>
@@ -301,6 +321,11 @@ onUnmounted(() => {
 
 .works-filter[aria-pressed="false"] {
   color: #cdcdcd;
+}
+
+.works-filter--empty,
+.works-filter__label--mobile {
+  display: none;
 }
 
 .works-filter sup {
@@ -390,6 +415,94 @@ onUnmounted(() => {
 
 .work-card__details p {
   font-size: 16px;
+}
+
+@media (max-width: 600px) {
+  .works-page {
+    --grid-inset: 8px;
+    --grid-pair: 4px;
+
+    padding: 0 0 80px;
+  }
+
+  .works-browser {
+    display: block;
+    padding: 166px calc(var(--grid-inset) + var(--grid-pair)) 0;
+  }
+
+  .works-filters {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+  }
+
+  .works-filter {
+    min-height: 43px;
+    font-size: 32px;
+    line-height: 1.35;
+  }
+
+  .works-filter:nth-child(1) {
+    order: 6;
+  }
+
+  .works-filter:nth-child(2) {
+    order: 1;
+  }
+
+  .works-filter:nth-child(3) {
+    order: 2;
+  }
+
+  .works-filter:nth-child(4) {
+    order: 3;
+  }
+
+  .works-filter:nth-child(5) {
+    order: 4;
+  }
+
+  .works-filter:nth-child(6) {
+    order: 5;
+  }
+
+  .works-filter--empty,
+  .works-filter__label--mobile {
+    display: flex;
+  }
+
+  .works-filter__label--desktop {
+    display: none;
+  }
+
+  .works-filter sup {
+    font-size: 12px;
+  }
+
+  .works-panel {
+    left: 0;
+    display: grid;
+  }
+
+  .works-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .work-card__details {
+    min-height: 86px;
+    padding: 12px 0 16px;
+  }
+
+  .work-card__details h3 {
+    margin-bottom: 4px;
+    font-size: 24px;
+  }
+
+  .work-card__details p {
+    font-size: 12px;
+    line-height: 1.2;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

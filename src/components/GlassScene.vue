@@ -24,6 +24,8 @@ let camera;
 let model;
 let frameId;
 let resizeObserver;
+let intersectionObserver;
+let isVisible = true;
 let discardMaterial;
 let fboMain;
 let fboBack;
@@ -37,19 +39,22 @@ function applyProgress(t) {
   if (!model || !camera) return;
 
   const p = Math.min(1, Math.max(0, t));
+  const isMobile = camera.aspect < 0.75;
 
   model.rotation.x = lerp(0.05, 0.42, p);
   model.rotation.y = lerp(0.15, Math.PI * 1.15, p);
   model.rotation.z = lerp(0, -0.08, p);
 
-  model.position.x = lerp(0, 2.35, p);
-  model.position.y = lerp(-0.15, -0.35, p);
+  model.position.x = isMobile ? lerp(0, 0.98, p) : lerp(0, 2.35, p);
+  model.position.y = isMobile
+    ? lerp(-0.15, 1.1, p)
+    : lerp(-0.15, -0.35, p);
   model.position.z = lerp(0, -0.4, p);
 
-  const scale = lerp(1, 1.18, p);
+  const scale = lerp(1, 1.18, p) * (isMobile ? 1.2 : 1);
   model.scale.setScalar(model.userData.baseScale * scale);
 
-  camera.position.z = lerp(5.2, 4.6, p);
+  camera.position.z = isMobile ? lerp(9.5, 8.8, p) : lerp(5.2, 4.6, p);
 }
 
 function fitModel(object) {
@@ -120,6 +125,7 @@ function resize() {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height, false);
+  applyProgress(props.progress);
 }
 
 function updateTransmissionBuffers(time) {
@@ -157,11 +163,12 @@ function updateTransmissionBuffers(time) {
 }
 
 function renderLoop(time = 0) {
-  frameId = window.requestAnimationFrame(renderLoop);
-  if (!renderer || !scene || !camera) return;
+  frameId = undefined;
+  if (!isVisible || !renderer || !scene || !camera) return;
 
   updateTransmissionBuffers(time * 0.001);
   renderer.render(scene, camera);
+  frameId = window.requestAnimationFrame(renderLoop);
 }
 
 onMounted(async () => {
@@ -218,6 +225,19 @@ onMounted(async () => {
 
   resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(host.value);
+
+  intersectionObserver = new IntersectionObserver(([entry]) => {
+    isVisible = entry.isIntersecting;
+
+    if (isVisible && !frameId) {
+      renderLoop();
+    } else if (!isVisible && frameId) {
+      window.cancelAnimationFrame(frameId);
+      frameId = undefined;
+    }
+  });
+  intersectionObserver.observe(host.value);
+
   renderLoop();
 });
 
@@ -229,6 +249,7 @@ watch(
 onUnmounted(() => {
   if (frameId) window.cancelAnimationFrame(frameId);
   resizeObserver?.disconnect();
+  intersectionObserver?.disconnect();
 
   if (model) {
     model.traverse((child) => {
