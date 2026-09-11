@@ -136,7 +136,7 @@ function closeMenu() {
     display: block;
     width: 36px;
     height: 36px;
-    background-color: transparent;
+    background-color: #fff;
     pointer-events: none;
     transition:
       top 700ms cubic-bezier(0.65, 0, 0.35, 1),

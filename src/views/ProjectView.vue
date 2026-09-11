@@ -252,10 +252,10 @@ onBeforeUnmount(() => {
               <div class="project-details__credits">
                 <h2>Project Team</h2>
                 <p>{{ project.team }}</p>
-                <template v-if="project.source">
-                  <h2>Source</h2>
-                  <p>{{ project.source }}</p>
-                </template>
+              </div>
+              <div v-if="project.source" class="project-details__source">
+                <h2>Source</h2>
+                <p>{{ project.source }}</p>
               </div>
             </section>
           </div>
@@ -513,14 +513,16 @@ onBeforeUnmount(() => {
 }
 
 .project-details__description,
-.project-details__credits {
+.project-details__credits,
+.project-details__source {
   display: grid;
   grid-template-columns: 1fr 3fr;
   column-gap: 8px;
   row-gap: 28px;
 }
 
-.project-details__credits {
+.project-details__credits,
+.project-details__source {
   align-content: start;
 }
 
@@ -644,14 +646,15 @@ onBeforeUnmount(() => {
 
   .project-meta,
   .project-details__description,
-  .project-details__credits {
+  .project-details__credits,
+  .project-details__source {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 6px;
   }
 
   .project-details {
     width: 100%;
-    gap: 24px;
+    gap: 48px;
   }
 
   .project-gallery {

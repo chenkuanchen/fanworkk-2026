@@ -267,7 +267,6 @@ onUnmounted(() => {
   position: absolute;
   z-index: 6;
   top: 50%;
-  left: calc(var(--grid-inset) + var(--grid-pair));
   pointer-events: none;
   will-change: transform;
 }
@@ -284,6 +283,7 @@ onUnmounted(() => {
 }
 
 .info-hero__intro {
+  left: var(--grid-inset);
   width: min(300px, 36vw);
   text-align: left;
 }
@@ -386,7 +386,6 @@ onUnmounted(() => {
 .info-block h2 {
   grid-column: 1 / -1;
   margin-bottom: 36px;
-  padding-left: var(--grid-pair);
   font-size: 36px;
   font-weight: 700;
   line-height: 1;
@@ -406,11 +405,6 @@ onUnmounted(() => {
   font-weight: 700;
   letter-spacing: 0.04em;
   opacity: 0.55;
-}
-
-.info-block__cols span,
-.info-block li > span {
-  padding-left: var(--grid-pair);
 }
 
 .info-block ul {
@@ -511,8 +505,8 @@ onUnmounted(() => {
 
   .info-hero__intro {
     top: 60%;
-    left: var(--grid-inset);
-    width: calc(4 * var(--page-grid-cell) - var(--grid-pair));
+    left: calc(var(--grid-inset) + var(--grid-pair));
+    width: calc(4 * var(--page-grid-cell) - 2 * var(--grid-pair));
   }
 
   .info-hero__intro h1 {
@@ -534,7 +528,8 @@ onUnmounted(() => {
 
   .info-details {
     min-height: 0;
-    padding: 100px var(--grid-inset) calc(2 * var(--detail-cell));
+    padding: 100px var(--grid-inset) var(--detail-cell)
+      calc(var(--grid-inset) + var(--grid-pair));
   }
 
   .info-details::before {
@@ -545,10 +540,10 @@ onUnmounted(() => {
     position: absolute;
     top: calc(var(--detail-cell) + var(--grid-pair));
     right: 0;
-    bottom: auto;
+    bottom: var(--detail-cell);
     left: calc(var(--grid-inset) + 4 * var(--detail-cell));
     width: auto;
-    height: calc(15 * var(--detail-cell) - var(--grid-pair));
+    height: auto;
     max-height: none;
     margin: 0;
   }
@@ -558,7 +553,7 @@ onUnmounted(() => {
   }
 
   .info-details__content {
-    width: calc(4 * var(--detail-cell) - var(--grid-pair));
+    width: calc(4 * var(--detail-cell) - 2 * var(--grid-pair));
   }
 
   .info-block {
@@ -571,7 +566,6 @@ onUnmounted(() => {
 
   .info-block h2 {
     margin-bottom: 32px;
-    padding-left: 0;
     font-size: 32px;
   }
 
@@ -589,7 +583,6 @@ onUnmounted(() => {
 
   .info-block li > span {
     display: block;
-    padding-left: 0;
   }
 }
 
