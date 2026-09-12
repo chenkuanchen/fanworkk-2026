@@ -114,7 +114,7 @@ onMounted(() => {
           trigger: worksSection.value,
           start: "top bottom",
           end: "top 80%",
-          scrub: 0.5,
+          scrub: 1,
         },
       },
     );
@@ -169,7 +169,7 @@ onUnmounted(() => {
     </div>
 
     <section id="top" class="hero" aria-label="自我介紹">
-      <p ref="heroYear" class="hero__year">KUANJEN&nbsp; 2026</p>
+      <p ref="heroYear" class="hero__year">Guan-Zhen&nbsp; 2026</p>
       <div class="hero__sticky">
         <div
           ref="heroCard"

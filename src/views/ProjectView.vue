@@ -83,7 +83,7 @@ const projects = [
   {
     id: "v07",
     code: "Ø-V07",
-    title: "Blocto Brand Extension",
+    title: "Brand Extension",
     year: "2024",
     category: "Visual Identity, Brand System Extension",
     organizer: "門戶科技有限公司",
@@ -289,9 +289,11 @@ onBeforeUnmount(() => {
             v-if="item.isVideo"
             :src="item.src"
             :aria-label="item.alt"
-            controls
+            autoplay
+            loop
+            muted
             playsinline
-            preload="metadata"
+            preload="auto"
             @loadedmetadata="registerProjectMedia"
           ></video>
           <img

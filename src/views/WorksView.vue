@@ -11,30 +11,20 @@ import visualIdentityFour from "@/asset/image/works/V04.png";
 import visualIdentityFive from "@/asset/image/works/V05.png";
 import visualIdentitySix from "@/asset/image/works/V06.png";
 import visualIdentitySeven from "@/asset/image/works/V07.png";
-import visualIdentityEight from "@/asset/image/works/V08.png";
 import websiteImage from "@/asset/image/works/W1.png";
 
 const categories = [
-  { name: "View All", count: 11 },
-  { name: "Visual Identity", count: 8 },
+  { name: "View All", count: 10 },
+  { name: "Visual Identity", count: 7 },
   { name: "Game Art", mobileName: "3D Arts", count: 1 },
   { name: "Website", count: 1 },
   { name: "Motion", count: 1 },
-  { name: "Shits", count: 0 },
 ];
 
 const works = [
   {
-    id: null,
-    title: "COOCON 繭",
-    category: "Visual Identity",
-    type: "Visual Identity, Event",
-    year: "2023",
-    image: visualIdentityEight,
-  },
-  {
     id: "v07",
-    title: "Blocto Brand Extension",
+    title: "Brand Extension",
     category: "Visual Identity",
     type: "Visual Identity, Brand System Extension",
     year: "2024",
@@ -443,7 +433,7 @@ onUnmounted(() => {
   }
 
   .works-filter:nth-child(1) {
-    order: 6;
+    order: 5;
   }
 
   .works-filter:nth-child(2) {
@@ -462,11 +452,6 @@ onUnmounted(() => {
     order: 4;
   }
 
-  .works-filter:nth-child(6) {
-    order: 5;
-  }
-
-  .works-filter--empty,
   .works-filter__label--mobile {
     display: flex;
   }

@@ -1,9 +1,44 @@
 <script setup>
+import { onMounted, onUnmounted, ref } from "vue";
 import contactIcon from "@/asset/image/contact/face.svg";
+
+const isHidden = ref(false);
+let lastY = 0;
+const THRESHOLD = 8;
+
+function onScroll() {
+  const y = window.scrollY;
+  const delta = y - lastY;
+
+  if (Math.abs(delta) < THRESHOLD) return;
+
+  if (y < 40) {
+    isHidden.value = false;
+  } else if (delta > 0) {
+    isHidden.value = true;
+  } else {
+    isHidden.value = false;
+  }
+
+  lastY = y;
+}
+
+onMounted(() => {
+  lastY = window.scrollY;
+  window.addEventListener("scroll", onScroll, { passive: true });
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", onScroll);
+});
 </script>
 
 <template>
-  <aside class="contact-bar" aria-label="聯絡資訊">
+  <aside
+    class="contact-bar"
+    :class="{ 'contact-bar--hidden': isHidden }"
+    aria-label="聯絡資訊"
+  >
     <div class="contact-bar__text">
       <span>Behance</span>
       <a href="mailto:fanworkk@gmail.com">fanworkk@gmail.com</a>
@@ -31,6 +66,15 @@ import contactIcon from "@/asset/image/contact/face.svg";
   background: var(--color-primary);
   font-size: 16px;
   font-weight: 700;
+  transition:
+    transform 0.35s ease,
+    opacity 0.35s ease;
+}
+
+.contact-bar--hidden {
+  transform: translateY(calc(100% + 40px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .contact-bar__text {
@@ -62,6 +106,10 @@ import contactIcon from "@/asset/image/contact/face.svg";
     padding: 6px 10px 6px 14px;
     font-size: 12px;
     transform: translateX(-50%);
+  }
+
+  .contact-bar--hidden {
+    transform: translateX(-50%) translateY(calc(100% + 40px));
   }
 
   .contact-bar__text {
