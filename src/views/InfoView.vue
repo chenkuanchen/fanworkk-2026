@@ -34,7 +34,7 @@ const experiences = [
 const education = [
   {
     year: "2019-2023",
-    name: "國立臺北科技大學",
+    name: "臺北科技大學",
     role: "互動設計系",
   },
 ];
@@ -43,12 +43,14 @@ const achievements = [
   {
     year: "2023",
     name: "迷失",
-    role: "Vision Get Together Award — Game / PC / Console 入圍",
+    org: "放視大賞",
+    award: "遊戲組/PC與主機遊戲組 入圍",
   },
   {
     year: "2023",
     name: "COOCON 繭：形而上",
-    role: "金點設計獎 — 金點新秀贊助特別獎",
+    org: "金點設計獎",
+    award: "金點新秀贊助特別獎",
   },
 ];
 
@@ -174,8 +176,8 @@ onUnmounted(() => {
           <h2>Education</h2>
           <div class="info-block__cols" aria-hidden="true">
             <span>YEAR</span>
-            <span>School</span>
-            <span>Major</span>
+            <span>SCHOOL</span>
+            <span>MAJOR</span>
           </div>
           <ul>
             <li v-for="item in education" :key="item.name + item.year">
@@ -189,14 +191,18 @@ onUnmounted(() => {
         <section class="info-block">
           <h2>Achievements</h2>
           <div class="info-block__cols" aria-hidden="true">
-            <span>Project</span>
-            <span>Award</span>
+            <span>YEAR</span>
+            <span>PROJECT</span>
+            <span>AWARD</span>
           </div>
           <ul>
-            <li v-for="item in achievements" :key="item.name + item.role">
+            <li v-for="item in achievements" :key="item.name + item.award">
               <span>{{ item.year }}</span>
               <span>{{ item.name }}</span>
-              <span>{{ item.role }}</span>
+              <span class="info-block__award">
+                <span>{{ item.org }}</span>
+                <span>{{ item.award }}</span>
+              </span>
             </li>
           </ul>
         </section>
@@ -329,7 +335,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(5, var(--detail-cell));
   gap: 0;
-  padding: 12vh var(--grid-inset) 20vh;
+  padding: 12vh var(--grid-inset) calc(20vh - 200px);
   background: var(--color-background);
 }
 
@@ -354,7 +360,7 @@ onUnmounted(() => {
 .info-details__media {
   position: absolute;
   top: 0;
-  bottom: var(--detail-cell);
+  bottom: 0;
   left: calc(var(--grid-inset) + var(--grid-pair));
   z-index: 1;
   width: calc(var(--detail-cell) - var(--grid-pair));
@@ -379,12 +385,13 @@ onUnmounted(() => {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
-  margin-bottom: 96px;
+  margin-bottom: 80px;
 }
 
 .info-block h2 {
   grid-column: 1 / -1;
-  margin-bottom: 36px;
+  margin-bottom: 24px;
+  padding-left: var(--grid-pair);
   font-size: 36px;
   font-weight: 700;
   line-height: 1;
@@ -406,6 +413,11 @@ onUnmounted(() => {
   opacity: 0.55;
 }
 
+.info-block__cols > span,
+.info-block li > span {
+  padding-left: var(--grid-pair);
+}
+
 .info-block ul {
   display: contents;
   list-style: none;
@@ -413,17 +425,24 @@ onUnmounted(() => {
 }
 
 .info-block li {
-  margin-bottom: 22px;
+  margin-bottom: 20px;
   font-size: 20px;
   line-height: 1.45;
 }
 
-.info-block li span:first-child {
+.info-block li > span:first-child {
   font-weight: 500;
 }
 
-.info-block li span:nth-child(2) {
+.info-block li > span:nth-child(2),
+.info-block__award {
   font-family: var(--font-tc);
+  font-weight: 400;
+}
+
+.info-block__award {
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 960px) {
