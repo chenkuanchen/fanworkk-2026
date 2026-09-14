@@ -30,6 +30,7 @@ let discardMaterial;
 let fboMain;
 let fboBack;
 const transmissionMeshes = [];
+const pageBackground = new THREE.Color(0xfffefc);
 
 function lerp(a, b, t) {
   return a + (b - a) * t;
@@ -84,34 +85,41 @@ function enhanceGlassMaterials(root) {
       name.includes("liquid") ||
       name.includes("fluid");
 
+    const thickness = looksLikeLiquid ? 0.9 : 1.35;
+    const backsideThickness = looksLikeLiquid ? 0.45 : 0.35;
+
     const material = new MeshTransmissionMaterial({
-      samples: 6,
+      samples: 8,
+      transmission: 0,
       _transmission: 1,
-      thickness: looksLikeLiquid ? 0.6 : 0.55,
-      roughness: looksLikeLiquid ? 0.08 : 0.04,
-      chromaticAberration: looksLikeLiquid ? 0.01 : 0.03,
-      anisotropicBlur: 0.1,
+      thickness,
+      roughness: looksLikeLiquid ? 0.06 : 0.02,
+      chromaticAberration: looksLikeLiquid ? 0.015 : 0.04,
+      anisotropicBlur: 0.15,
+      attenuationDistance: looksLikeLiquid ? 1.8 : Infinity,
+      attenuationColor: new THREE.Color(
+        looksLikeLiquid ? 0xb8e8f5 : 0xffffff,
+      ),
     });
 
-    material.color.copy(source?.color || new THREE.Color(looksLikeLiquid ? 0xd8f4ff : 0xffffff));
-    material.map = source?.map || null;
-    material.normalMap = source?.normalMap || null;
+    material.color.set(looksLikeLiquid ? 0xd8f4ff : 0xffffff);
+    material.metalness = 0;
+    material.roughness = looksLikeLiquid ? 0.06 : 0.02;
     material.ior = looksLikeLiquid ? 1.33 : 1.5;
-    material.envMapIntensity = 1.25;
-    material.clearcoat = looksLikeLiquid ? 0.2 : 1;
-    material.clearcoatRoughness = 0.05;
-    material.attenuationColor = looksLikeLiquid
-      ? new THREE.Color(0xb8e8f5)
-      : new THREE.Color(0xffffff);
-    material.attenuationDistance = looksLikeLiquid ? 2.5 : Infinity;
-    material.side = THREE.DoubleSide;
+    material.thickness = thickness;
+    material.envMapIntensity = 0.55;
+    material.clearcoat = looksLikeLiquid ? 0.15 : 0.4;
+    material.clearcoatRoughness = 0.12;
+    material.transparent = true;
+    material.depthWrite = false;
+    material.side = THREE.FrontSide;
 
     child.material = material;
     child.castShadow = false;
     child.receiveShadow = false;
     child.userData.transmissionMaterial = material;
-    child.userData.thickness = material.thickness;
-    child.userData.backsideThickness = looksLikeLiquid ? 0.6 : 0.25;
+    child.userData.thickness = thickness;
+    child.userData.backsideThickness = backsideThickness;
     transmissionMeshes.push(child);
   });
 }
@@ -133,32 +141,46 @@ function updateTransmissionBuffers(time) {
 
   const oldTone = renderer.toneMapping;
   const oldBackground = scene.background;
+  const oldClearColor = new THREE.Color();
+  const oldClearAlpha = renderer.getClearAlpha();
+  renderer.getClearColor(oldClearColor);
+
   renderer.toneMapping = THREE.NoToneMapping;
-  scene.background = scene.environment;
+  scene.background = pageBackground;
+  renderer.setClearColor(pageBackground, 1);
+
+  for (const mesh of transmissionMeshes) {
+    mesh.userData.transmissionMaterial.time = time;
+    mesh.material = discardMaterial;
+  }
+
+  renderer.setRenderTarget(fboBack);
+  renderer.clear(true, true, true);
+  renderer.render(scene, camera);
 
   for (const mesh of transmissionMeshes) {
     const material = mesh.userData.transmissionMaterial;
-    material.time = time;
-    mesh.material = discardMaterial;
-
-    renderer.setRenderTarget(fboBack);
-    renderer.render(scene, camera);
-
-    mesh.material = material;
     material.buffer = fboBack.texture;
     material.thickness = mesh.userData.backsideThickness;
     material.side = THREE.BackSide;
+    mesh.material = material;
+  }
 
-    renderer.setRenderTarget(fboMain);
-    renderer.render(scene, camera);
+  renderer.setRenderTarget(fboMain);
+  renderer.clear(true, true, true);
+  renderer.render(scene, camera);
 
-    material.thickness = mesh.userData.thickness;
-    material.side = THREE.DoubleSide;
+  for (const mesh of transmissionMeshes) {
+    const material = mesh.userData.transmissionMaterial;
     material.buffer = fboMain.texture;
+    material.thickness = mesh.userData.thickness;
+    material.side = THREE.FrontSide;
+    mesh.material = material;
   }
 
   scene.background = oldBackground;
   renderer.setRenderTarget(null);
+  renderer.setClearColor(oldClearColor, oldClearAlpha);
   renderer.toneMapping = oldTone;
 }
 
@@ -196,18 +218,19 @@ onMounted(async () => {
   host.value.appendChild(renderer.domElement);
 
   discardMaterial = new MeshDiscardMaterial();
-  fboBack = useFBO(512, 512);
-  fboMain = useFBO(512, 512);
+  fboBack = useFBO(1024, 1024);
+  fboMain = useFBO(1024, 1024);
 
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   pmrem.dispose();
+  scene.background = null;
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-  const key = new THREE.DirectionalLight(0xffffff, 1.1);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  const key = new THREE.DirectionalLight(0xffffff, 0.85);
   key.position.set(3, 5, 4);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0xd7f7ff, 0.45);
+  const fill = new THREE.DirectionalLight(0xd7f7ff, 0.3);
   fill.position.set(-4, 1, -2);
   scene.add(fill);
 

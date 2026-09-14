@@ -280,7 +280,7 @@ onUnmounted(() => {
   left: 50%;
   width: min(1100px, 86vw);
   color: #fff;
-  font-size: 64px;
+  font-size: 60px;
   font-weight: 500;
   line-height: 1.2;
   mix-blend-mode: difference;
