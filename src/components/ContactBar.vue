@@ -9,17 +9,18 @@ const THRESHOLD = 8;
 function onScroll() {
   const y = window.scrollY;
   const delta = y - lastY;
+  const nearBottom =
+    y + window.innerHeight >= document.documentElement.scrollHeight - 40;
+
+  if (y < 40 || nearBottom) {
+    isHidden.value = false;
+    lastY = y;
+    return;
+  }
 
   if (Math.abs(delta) < THRESHOLD) return;
 
-  if (y < 40) {
-    isHidden.value = false;
-  } else if (delta > 0) {
-    isHidden.value = true;
-  } else {
-    isHidden.value = false;
-  }
-
+  isHidden.value = delta > 0;
   lastY = y;
 }
 
@@ -52,10 +53,7 @@ onUnmounted(() => {
   position: fixed;
   z-index: 30;
   bottom: 24px;
-  left: calc(
-    var(--grid-inset) +
-      (100vw - 2 * var(--grid-inset) - var(--grid-pair)) / 5 - 350px
-  );
+  left: 24px;
   display: flex;
   width: 350px;
   height: 72px;
@@ -91,8 +89,6 @@ onUnmounted(() => {
 @media (max-width: 960px) {
   .contact-bar {
     width: calc(100vw - 48px);
-    left: 24px;
-    bottom: 24px;
   }
 }
 
