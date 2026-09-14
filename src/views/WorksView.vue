@@ -2,16 +2,16 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 
-import gameArtImage from "@/asset/image/works/G1.png";
-import motionImage from "@/asset/image/works/M1.png";
-import visualIdentityOne from "@/asset/image/works/V01.png";
-import visualIdentityTwo from "@/asset/image/works/V02.png";
-import visualIdentityThree from "@/asset/image/works/V03.png";
-import visualIdentityFour from "@/asset/image/works/V04.png";
-import visualIdentityFive from "@/asset/image/works/V05.png";
-import visualIdentitySix from "@/asset/image/works/V06.png";
-import visualIdentitySeven from "@/asset/image/works/V07.png";
-import websiteImage from "@/asset/image/works/W1.png";
+import gameArtImage from "@/asset/image/works/G01_preview.jpg";
+import motionImage from "@/asset/image/works/M01_preview.jpg";
+import visualIdentityOne from "@/asset/image/works/V01_Preview.jpg";
+import visualIdentityTwo from "@/asset/image/works/V02_preview.jpg";
+import visualIdentityThree from "@/asset/image/works/V03_preview.jpg";
+import visualIdentityFour from "@/asset/image/works/V04_preview.jpg";
+import visualIdentityFive from "@/asset/image/works/V05_preview.jpg";
+import visualIdentitySix from "@/asset/image/works/V06_preview.jpg";
+import visualIdentitySeven from "@/asset/image/works/V07_preview.jpg";
+import websiteImage from "@/asset/image/works/W01_preview.jpg";
 
 const categories = [
   { name: "View All", count: 10 },
@@ -23,12 +23,28 @@ const categories = [
 
 const works = [
   {
-    id: "v07",
-    title: "Brand Extension",
+    id: "v01",
+    title: "心動 ONE BUY ONE",
     category: "Visual Identity",
-    type: "Visual Identity, Brand System Extension",
-    year: "2024",
-    image: visualIdentitySeven,
+    type: "Visual Identity, Event",
+    year: "2026",
+    image: visualIdentityOne,
+  },
+  {
+    id: "v02",
+    title: "街區禮物交換所",
+    category: "Visual Identity",
+    type: "Visual Identity, Event",
+    year: "2026",
+    image: visualIdentityTwo,
+  },
+  {
+    id: "w01",
+    title: "台灣好樂園",
+    category: "Website",
+    type: "Website",
+    year: "2026",
+    image: websiteImage,
   },
   {
     id: "v06",
@@ -37,14 +53,6 @@ const works = [
     type: "Visual Identity, Event",
     year: "2025",
     image: visualIdentitySix,
-  },
-  {
-    id: "v01",
-    title: "心動 ONE BUY ONE",
-    category: "Visual Identity",
-    type: "Visual Identity, Event",
-    year: "2026",
-    image: visualIdentityOne,
   },
   {
     id: "v05",
@@ -71,20 +79,12 @@ const works = [
     image: visualIdentityThree,
   },
   {
-    id: "v02",
-    title: "街區禮物交換所",
+    id: "v07",
+    title: "Brand Extension",
     category: "Visual Identity",
-    type: "Visual Identity, Event",
-    year: "2026",
-    image: visualIdentityTwo,
-  },
-  {
-    id: "w01",
-    title: "台灣好樂園",
-    category: "Website",
-    type: "Website",
-    year: "2026",
-    image: websiteImage,
+    type: "Visual Identity, Brand System Extension",
+    year: "2024",
+    image: visualIdentitySeven,
   },
   {
     id: "m01",
@@ -221,6 +221,7 @@ onUnmounted(() => {
               >
                 <div class="work-card__media">
                   <img
+                    v-if="work.image"
                     class="work-card__image"
                     :src="work.image"
                     :alt="work.title"
