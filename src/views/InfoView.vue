@@ -158,8 +158,8 @@ onUnmounted(() => {
           <h2>Experience</h2>
           <div class="info-block__cols" aria-hidden="true">
             <span>YEAR</span>
-            <span>NAME</span>
-            <span>NAME</span>
+            <span>COMPANY</span>
+            <span>ROLE</span>
           </div>
           <ul>
             <li v-for="item in experiences" :key="item.name + item.year">
@@ -174,8 +174,8 @@ onUnmounted(() => {
           <h2>Education</h2>
           <div class="info-block__cols" aria-hidden="true">
             <span>YEAR</span>
-            <span>NAME</span>
-            <span>NAME</span>
+            <span>School</span>
+            <span>Major</span>
           </div>
           <ul>
             <li v-for="item in education" :key="item.name + item.year">
@@ -189,9 +189,8 @@ onUnmounted(() => {
         <section class="info-block">
           <h2>Achievements</h2>
           <div class="info-block__cols" aria-hidden="true">
-            <span>YEAR</span>
-            <span>NAME</span>
-            <span>NAME</span>
+            <span>Project</span>
+            <span>Award</span>
           </div>
           <ul>
             <li v-for="item in achievements" :key="item.name + item.role">
