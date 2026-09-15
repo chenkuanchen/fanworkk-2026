@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import heroStart from "@/asset/image/destop/hero-filp-water-start.svg";
+import enterIcon from "@/asset/image/icon/icon_enter.svg";
 import featureOne from "@/asset/image/destop/feature-1.jpg";
 import featureTwo from "@/asset/image/destop/feature-2.JPG";
 import featureThree from "@/asset/image/destop/feature-3.jpg";
@@ -180,7 +181,7 @@ onUnmounted(() => {
           </div>
           <div class="hero-card__face hero-card__face--back">
             <p class="hero-card__intro">
-              視覺設計師，現居台中。<br /><br />
+              視覺設計師，現居台中。<br />
               作品橫跨動畫、3D 以及平面。喜歡探究有趣的設計數位體驗，善於轉譯訊息為多面向、能被感受與記憶的產物。
             </p>
             <RouterLink class="hero-card__more" :to="{ name: 'info' }">
@@ -226,7 +227,8 @@ onUnmounted(() => {
             class="work__link"
             :to="{ name: 'project', params: { id: work.id } }"
           >
-            View Project&nbsp; →
+            View Project
+            <img :src="enterIcon" alt="" />
           </RouterLink>
           <p>{{ work.description }}</p>
         </div>
@@ -493,9 +495,18 @@ main {
 }
 
 .work__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 20px;
   font-weight: 700;
   line-height: 18px;
+}
+
+.work__link img {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
 .work__details p {
@@ -532,7 +543,6 @@ main {
   }
 
   .featured-works__heading {
-    padding-left: 0;
     font-size: 20px;
   }
 
@@ -568,7 +578,6 @@ main {
     grid-column: 1;
     grid-row: 1;
     padding-right: 0;
-    padding-left: 0;
     font-size: 20px;
     mix-blend-mode: normal;
   }
@@ -594,6 +603,7 @@ main {
     align-self: start;
     gap: 2px;
     margin-top: 36px;
+    padding-left: var(--grid-pair);
     font-size: 12px;
     line-height: 14px;
     font-weight: 500;
@@ -614,9 +624,15 @@ main {
     justify-self: start;
     margin-top: 36px;
     padding-right: 0;
+    gap: 4px;
     font-size: 12px;
     line-height: 16px;
     white-space: nowrap;
+  }
+
+  .work__link img {
+    width: 12px;
+    height: 12px;
   }
 
   .work__details p {
