@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
-import { RouterLink } from "vue-router";
+import { nextTick, onMounted, onUnmounted, ref } from "vue";
+import { onBeforeRouteLeave, RouterLink } from "vue-router";
 
 import gameArtImage from "@/asset/image/works/G01_preview.jpg";
 import motionImage from "@/asset/image/works/M01_preview.jpg";
@@ -12,6 +12,11 @@ import visualIdentityFive from "@/asset/image/works/V05_preview.jpg";
 import visualIdentitySix from "@/asset/image/works/V06_preview.jpg";
 import visualIdentitySeven from "@/asset/image/works/V07_preview.jpg";
 import websiteImage from "@/asset/image/works/W01_preview.jpg";
+
+const WORKS_SCROLL_KEY = "works-scroll-y";
+const WORKS_RETURN_ID_KEY = "works-return-id";
+const WORKS_CATEGORY_KEY = "works-category";
+const WORKS_RESTORE_KEY = "works-should-restore";
 
 const categories = [
   { name: "View All", count: 10 },
@@ -104,7 +109,12 @@ const works = [
   },
 ];
 
-const selectedCategory = ref("View All");
+const savedCategory = sessionStorage.getItem(WORKS_CATEGORY_KEY);
+const selectedCategory = ref(
+  categories.some((category) => category.name === savedCategory)
+    ? savedCategory
+    : "View All",
+);
 const isExpanded = ref(true);
 const worksPage = ref(null);
 let imageObserver;
@@ -137,7 +147,47 @@ function stopObservingImages(panel) {
     .forEach((media) => imageObserver?.unobserve(media));
 }
 
-onMounted(() => {
+function restoreWorksPosition() {
+  const shouldRestore = sessionStorage.getItem(WORKS_RESTORE_KEY) === "1";
+  sessionStorage.removeItem(WORKS_RESTORE_KEY);
+  if (!shouldRestore) return;
+
+  const returnId = sessionStorage.getItem(WORKS_RETURN_ID_KEY);
+  sessionStorage.removeItem(WORKS_RETURN_ID_KEY);
+
+  if (returnId && worksPage.value) {
+    const card = worksPage.value.querySelector(
+      `[data-work-id="${returnId}"]`,
+    );
+    if (card) {
+      card.scrollIntoView({ block: "center" });
+      return;
+    }
+  }
+
+  const savedY = sessionStorage.getItem(WORKS_SCROLL_KEY);
+  if (savedY != null) {
+    window.scrollTo(0, Number(savedY) || 0);
+  }
+}
+
+onBeforeRouteLeave((to) => {
+  sessionStorage.setItem(WORKS_SCROLL_KEY, String(window.scrollY));
+  sessionStorage.setItem(WORKS_CATEGORY_KEY, selectedCategory.value);
+
+  if (to.name === "project" && to.params.id) {
+    sessionStorage.setItem(WORKS_RETURN_ID_KEY, String(to.params.id));
+    sessionStorage.setItem(WORKS_RESTORE_KEY, "1");
+  } else {
+    sessionStorage.removeItem(WORKS_RETURN_ID_KEY);
+    sessionStorage.removeItem(WORKS_RESTORE_KEY);
+  }
+});
+
+onMounted(async () => {
+  await nextTick();
+  restoreWorksPosition();
+
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   imageObserver = new IntersectionObserver(
@@ -213,6 +263,7 @@ onUnmounted(() => {
                 :key="work.title"
                 :is="work.id ? RouterLink : 'article'"
                 class="work-card"
+                :data-work-id="work.id"
                 :to="
                   work.id
                     ? { name: 'project', params: { id: work.id } }
@@ -420,7 +471,7 @@ onUnmounted(() => {
 
   .works-browser {
     display: block;
-    padding: 166px calc(var(--grid-inset) + var(--grid-pair)) 0;
+    padding: 128px calc(var(--grid-inset) + var(--grid-pair)) 0;
   }
 
   .works-filters {

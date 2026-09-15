@@ -153,9 +153,14 @@ async function loadProjectMedia() {
 
   const currentProject = project.value;
   const entries = Object.entries(projectMediaLoaders)
-    .filter(([path]) =>
-      path.toLowerCase().includes(`/${currentProject.id}-`),
-    )
+    .filter(([path]) => {
+      const normalized = path.toLowerCase().replace(/\\/g, "/");
+      const id = currentProject.id.toLowerCase();
+      return (
+        normalized.includes(`/${id}-`) ||
+        normalized.includes(`/${id}_`)
+      );
+    })
     .sort(([pathA], [pathB]) => pathA.localeCompare(pathB));
 
   const nextMedia = await Promise.all(
@@ -382,19 +387,19 @@ onBeforeUnmount(() => {
       >
         <img :src="backIcon" alt="" />
       </RouterLink>
-    </footer>
 
-    <Transition name="to-top">
-      <button
-        v-if="showToTop"
-        class="to-top-button"
-        type="button"
-        aria-label="回到頁面頂部"
-        @click="scrollToTop"
-      >
-        <img :src="toTopIcon" alt="" />
-      </button>
-    </Transition>
+      <Transition name="to-top">
+        <button
+          v-if="showToTop"
+          class="to-top-button"
+          type="button"
+          aria-label="回到頁面頂部"
+          @click="scrollToTop"
+        >
+          <img :src="toTopIcon" alt="" />
+        </button>
+      </Transition>
+    </footer>
   </main>
 
   <main v-else class="project-not-found">
@@ -410,7 +415,6 @@ onBeforeUnmount(() => {
   );
 
   position: relative;
-  min-height: 100vh;
   padding-top: 176px;
   container-type: inline-size;
 }
@@ -636,9 +640,12 @@ onBeforeUnmount(() => {
 
 .project-media:first-child {
   aspect-ratio: 16 / 9;
-  margin-bottom: 60px;
   opacity: 0;
   transform: translate3d(0, 48px, 0);
+}
+
+.project-media:first-child:not(:last-child) {
+  margin-bottom: 60px;
 }
 
 .project-media:first-child img,
@@ -657,13 +664,23 @@ onBeforeUnmount(() => {
   display: block;
   width: 100%;
   height: auto;
+  vertical-align: bottom;
+}
+
+.project-media:has(> video) {
+  aspect-ratio: 16 / 9;
+}
+
+.project-media video {
+  height: 100%;
+  object-fit: cover;
 }
 
 .project-footer {
   display: flex;
   min-height: 120px;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   padding: 42px calc(var(--grid-inset) + var(--grid-pair));
 }
 
@@ -674,10 +691,10 @@ onBeforeUnmount(() => {
 }
 
 .to-top-button {
-  position: fixed;
+  position: relative;
   z-index: 25;
-  right: 20px;
-  bottom: 42px;
+  margin-left: auto;
+  margin-right: calc(-1 * var(--grid-pair));
 }
 
 .to-top-enter-active,
@@ -707,6 +724,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 960px) {
   .project-page {
+    min-height: 0;
     padding-top: 154px;
   }
 
@@ -755,16 +773,22 @@ onBeforeUnmount(() => {
     width: 100%;
     margin-left: 0;
   }
+
+  .project-media:last-child {
+    margin-bottom: 0;
+  }
+
+  .project-footer {
+    min-height: 0;
+    padding-top: 42px;
+    padding-bottom: calc(48px + 12px);
+  }
 }
 
 @media (max-width: 600px) {
   .project-page {
     --grid-inset: 8px;
     --grid-pair: 4px;
-  }
-
-  .to-top-button {
-    right: var(--grid-inset);
   }
 }
 

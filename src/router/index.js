@@ -24,9 +24,13 @@ const router = createRouter({
       component: () => import('@/views/InfoView.vue'),
     },
   ],
-  scrollBehavior(to) {
+  scrollBehavior(to, from) {
     if (to.hash) {
       return { el: to.hash, behavior: 'smooth' }
+    }
+    // 從專案頁返回作品列表時，交由 WorksView 還原位置
+    if (to.name === 'works' && from.name === 'project') {
+      return false
     }
     return { top: 0 }
   },
