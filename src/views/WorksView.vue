@@ -225,6 +225,8 @@ onUnmounted(() => {
                     class="work-card__image"
                     :src="work.image"
                     :alt="work.title"
+                    loading="lazy"
+                    decoding="async"
                     @load="registerWorkImage"
                   />
                 </div>
