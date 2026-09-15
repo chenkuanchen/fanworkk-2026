@@ -10,11 +10,21 @@ function closeMenu() {
 </script>
 
 <template>
-  <header
-    class="site-header"
+  <div
+    class="site-header-shell"
     :class="{ 'site-header--menu-open': isMenuOpen }"
     @keydown.esc="closeMenu"
   >
+    <header class="site-header">
+      <RouterLink class="site-header__brand" :to="{ name: 'home', hash: '#top' }">
+        fanworkk
+      </RouterLink>
+      <nav class="site-header__nav" aria-label="主要導覽">
+        <RouterLink :to="{ name: 'works' }">works</RouterLink>
+        <RouterLink :to="{ name: 'info' }">info</RouterLink>
+      </nav>
+    </header>
+
     <button
       class="site-header__menu-toggle"
       type="button"
@@ -30,6 +40,7 @@ function closeMenu() {
     >
       <span v-for="index in 4" :key="index" aria-hidden="true"></span>
       <nav id="mobile-navigation" aria-label="主要導覽">
+        <RouterLink :to="{ name: 'home', hash: '#top' }" @click="closeMenu">home</RouterLink>
         <RouterLink :to="{ name: 'works' }" @click="closeMenu">works</RouterLink>
         <RouterLink :to="{ name: 'info' }" @click="closeMenu">info</RouterLink>
       </nav>
@@ -40,15 +51,7 @@ function closeMenu() {
         @click="closeMenu"
       ></button>
     </div>
-
-    <RouterLink class="site-header__brand" :to="{ name: 'home', hash: '#top' }">
-      fanworkk
-    </RouterLink>
-    <nav class="site-header__nav" aria-label="主要導覽">
-      <RouterLink :to="{ name: 'works' }">works</RouterLink>
-      <RouterLink :to="{ name: 'info' }">info</RouterLink>
-    </nav>
-  </header>
+  </div>
 </template>
 
 <style scoped>
@@ -96,8 +99,7 @@ function closeMenu() {
     top: 61px;
     right: 12px;
     left: 12px;
-    color: #000;
-    mix-blend-mode: normal;
+    justify-content: center;
   }
 
   .site-header__brand {
@@ -106,7 +108,6 @@ function closeMenu() {
     left: 50%;
     margin: 0;
     transform: translateX(-50%);
-    transition: opacity 150ms ease;
   }
 
   .site-header__nav {
@@ -114,6 +115,10 @@ function closeMenu() {
   }
 
   .site-header__menu-toggle {
+    position: fixed;
+    z-index: 21;
+    top: 61px;
+    left: 12px;
     display: block;
     width: 36px;
     height: 36px;
@@ -122,15 +127,14 @@ function closeMenu() {
     background: transparent;
   }
 
-  .site-header--menu-open .site-header__menu-toggle,
-  .site-header--menu-open .site-header__brand {
+  .site-header--menu-open .site-header__menu-toggle {
     opacity: 0;
     pointer-events: none;
   }
 
   .site-header__mobile-menu {
     position: fixed;
-    z-index: 0;
+    z-index: 20;
     top: 61px;
     left: 12px;
     display: block;
@@ -148,7 +152,7 @@ function closeMenu() {
   .site-header--menu-open .site-header__mobile-menu {
     top: 67px;
     width: 72px;
-    height: 238px;
+    height: 293px;
     background-color: var(--color-background);
     pointer-events: auto;
   }
@@ -209,7 +213,7 @@ function closeMenu() {
 
   .site-header__menu-close {
     position: absolute;
-    top: 157px;
+    top: 212px;
     left: 0;
     width: 36px;
     height: 36px;
@@ -239,7 +243,6 @@ function closeMenu() {
 }
 
 @media (max-width: 600px) and (prefers-reduced-motion: reduce) {
-  .site-header__brand,
   .site-header__mobile-menu,
   .site-header__mobile-menu nav,
   .site-header__menu-close {
