@@ -707,12 +707,12 @@ onBeforeUnmount(() => {
 
 @media (max-width: 960px) {
   .project-page {
-    padding-top: 128px;
+    padding-top: 154px;
   }
 
   .project-summary {
     width: 100%;
-    margin-top: 64px;
+    margin-top: 48px;
     margin-left: 0;
   }
 
@@ -720,7 +720,17 @@ onBeforeUnmount(() => {
     margin-left: 0;
   }
 
-  .project-meta,
+  .project-meta {
+    grid-template-columns:
+      calc(2 * var(--project-grid-cell) - var(--grid-pair))
+      minmax(0, 1fr);
+    gap: 18px 0;
+  }
+
+  .project-meta > div:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
   .project-details__description,
   .project-details__credits,
   .project-details__source {
