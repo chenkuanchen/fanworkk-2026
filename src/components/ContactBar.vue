@@ -41,7 +41,11 @@ onUnmounted(() => {
     aria-label="聯絡資訊"
   >
     <div class="contact-bar__text">
-      <span>Behance</span>
+      <a
+        href="https://www.behance.net/t108ac1019bb97"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Behance</a>
       <a href="mailto:fanworkk@gmail.com">fanworkk@gmail.com</a>
     </div>
     <img :src="contactIcon" alt="" />
