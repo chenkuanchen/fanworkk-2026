@@ -192,6 +192,7 @@ function closeMenu() {
     flex-direction: column;
     gap: 24px;
     font-size: 24px;
+    font-weight: 600;
     line-height: 31px;
   }
 
