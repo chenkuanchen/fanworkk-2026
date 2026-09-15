@@ -151,7 +151,7 @@ onUnmounted(() => {
         >
           <h1>Information</h1>
           <p>
-            陳冠臻，視覺設計師，出產自彰化。<br />
+            陳冠臻，視覺設計師，現居台中。<br />
             喜歡看，看疏密、看長短、看正反、看明暗，將觀察囊括成一套理解，再透過設計詮釋。對於設計在
             不同媒介與表現形式保持好奇，也持續探索不同載體的可能性。<br /><br />
             擁有近四年的視覺設計實務經驗，專業能力橫跨平面視覺、品牌活動、數位內容與
@@ -181,9 +181,9 @@ onUnmounted(() => {
           </div>
           <ul>
             <li v-for="item in experiences" :key="item.name + item.year">
-              <span>{{ item.year }}</span>
-              <span>{{ item.name }}</span>
-              <span>{{ item.role }}</span>
+              <span data-label="YEAR">{{ item.year }}</span>
+              <span data-label="COMPANY">{{ item.name }}</span>
+              <span data-label="ROLE">{{ item.role }}</span>
             </li>
           </ul>
         </section>
@@ -197,9 +197,9 @@ onUnmounted(() => {
           </div>
           <ul>
             <li v-for="item in education" :key="item.name + item.year">
-              <span>{{ item.year }}</span>
-              <span>{{ item.name }}</span>
-              <span>{{ item.role }}</span>
+              <span data-label="YEAR">{{ item.year }}</span>
+              <span data-label="SCHOOL">{{ item.name }}</span>
+              <span data-label="MAJOR">{{ item.role }}</span>
             </li>
           </ul>
         </section>
@@ -213,9 +213,9 @@ onUnmounted(() => {
           </div>
           <ul>
             <li v-for="item in achievements" :key="item.name + item.award">
-              <span>{{ item.year }}</span>
-              <span>{{ item.name }}</span>
-              <span class="info-block__award">
+              <span data-label="YEAR">{{ item.year }}</span>
+              <span data-label="PROJECT">{{ item.name }}</span>
+              <span class="info-block__award" data-label="AWARD">
                 <span>{{ item.org }}</span>
                 <span>{{ item.award }}</span>
               </span>
@@ -532,11 +532,11 @@ onUnmounted(() => {
   }
 
   .info-hero__skills {
-    top: 46.5%;
+    top: 60%;
     width: calc(100% - 24px);
     font-size: 32px;
     line-height: 1.5;
-    font-weight: 400;
+    font-weight: 500;
     text-align: left;
   }
 
@@ -552,7 +552,7 @@ onUnmounted(() => {
   }
 
   .info-hero__intro p {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 500;
     line-height: 1.9;
   }
@@ -611,15 +611,51 @@ onUnmounted(() => {
   }
 
   .info-block li {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     margin-bottom: 18px;
-    font-size: 16px;
+    font-family: var(--font-tc);
+    font-size: 14px;
     font-weight: 500;
-    line-height: 1.55;
+    line-height: 1.9;
   }
 
-  .info-block li > span {
+  .info-block li > span,
+  .info-block li > span:first-child,
+  .info-block li > span:nth-child(2),
+  .info-block__award {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: center;
+    padding-left: 0;
+    font-family: var(--font-tc);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.9;
+  }
+
+  .info-block li > span::before,
+  .info-block__award::before {
+    content: attr(data-label);
+    align-self: center;
+    font-family: var(--font-en), sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    opacity: 0.55;
+  }
+
+  .info-block__award > span {
     display: block;
+    grid-column: 2;
+    padding-left: 0;
+    font-family: var(--font-tc);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.9;
   }
 }
 
