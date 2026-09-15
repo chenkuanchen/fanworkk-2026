@@ -1,11 +1,19 @@
 <script setup>
-import { onMounted, onUnmounted, reactive, ref } from "vue";
+import {
+  defineAsyncComponent,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+} from "vue";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import GlassScene from "@/components/GlassScene.vue";
-import decoShape from "@/asset/image/about-me/dec-01.png";
 import decoTall from "@/asset/image/about-me/dec-02.avif";
+
+const GlassScene = defineAsyncComponent(
+  () => import("@/components/GlassScene.vue"),
+);
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -121,19 +129,18 @@ onUnmounted(() => {
             transform: `translate(-50%, -50%) translateY(${-scrollState.intro * 100}vh)`,
           }"
         >
-          Graphic Design (Adobe Illustrator) (Adobe Photoshop),
-          Web Design (Figma), 3D (Blender), Motion Design (Adobe After
-          Effects), Game Art (Unity).
+          Graphic Design (Adobe Illustrator) (Adobe Photoshop), Web Design
+          (Figma), 3D (Blender), Motion Design (Adobe After Effects), Game Art
+          (Unity).
         </p>
 
-        <img
+        <div
           class="info-hero__deco"
-          :src="decoShape"
-          alt=""
+          aria-hidden="true"
           :style="{
             transform: `translate(-50%, -50%) translateY(${(1 - scrollState.intro) * 100}vh)`,
           }"
-        />
+        ></div>
 
         <div
           class="info-hero__intro"
@@ -144,7 +151,16 @@ onUnmounted(() => {
         >
           <h1>Information</h1>
           <p>
-            陳冠臻,多媒體設計師,現居台中。喜歡塗塗抹抹、剪剪貼貼,志於製作視覺,喜愛探索設計在不同媒介中的可能性。曾任職於百貨業,負責製作具備品牌思維的活動識別;過程中發現,比起活動製作物本身,我更著迷於互動相關的內容——因此目前正朝網頁設計的方向發展，半瓶水持續灌溉中。
+            陳冠臻，視覺設計師，出產自彰化。<br />
+            喜歡看，看疏密、看長短、看正反、看明暗，將觀察囊括成一套理解，再透過設計詮釋。對於設計在
+            不同媒介與表現形式保持好奇，也持續探索不同載體的可能性。<br /><br />
+            擁有近四年的視覺設計實務經驗，專業能力橫跨平面視覺、品牌活動、數位內容與
+            UI/UX
+            設計。過去的工作經驗讓我逐漸建立「使用者導向的設計思維」與「結構化的資訊整理能力」，熟悉
+            Figma、AdobeCreative Suite 等設計工具，並具備 RWD
+            介面設計規範與前端組件化開發的基本概念。近期完成為期四個月的「產業新尖兵－Figma
+            UI/UX 與 Vue.js 前端培訓班」，進一步補足 UI/UX
+            與前端開發之間的實作能力。
           </p>
         </div>
       </div>
@@ -288,8 +304,10 @@ onUnmounted(() => {
 }
 
 .info-hero__intro {
-  left: var(--grid-inset);
-  width: min(300px, 36vw);
+  /* 對齊第一條主格線的右側（格點右緣） */
+  left: calc(var(--grid-inset) + var(--grid-pair));
+  /* 橫跨兩個格距 */
+  width: calc(2 * var(--page-grid-cell) - var(--grid-pair));
   text-align: left;
 }
 
@@ -299,10 +317,8 @@ onUnmounted(() => {
   top: 50%;
   left: 50%;
   width: min(420px, 50vw);
+  height: min(420px, 50vw);
   max-width: none;
-  opacity: 0.22;
-  filter: invert(1) grayscale(1) brightness(1.35);
-  mix-blend-mode: multiply;
   pointer-events: none;
   will-change: transform;
 }
@@ -318,9 +334,11 @@ onUnmounted(() => {
 .info-hero__intro p {
   position: relative;
   font-family: var(--font-tc);
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1.7;
   letter-spacing: 0.02em;
+  text-align: justify;
+  text-justify: inter-ideograph;
 }
 
 .info-hero__glass {
@@ -426,7 +444,7 @@ onUnmounted(() => {
 
 .info-block li {
   margin-bottom: 20px;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.45;
 }
 
@@ -451,7 +469,8 @@ onUnmounted(() => {
   }
 
   .info-hero__intro {
-    width: min(70vw, 420px);
+    left: calc(var(--grid-inset) + var(--grid-pair));
+    width: calc(2 * var(--page-grid-cell) - var(--grid-pair));
   }
 
   .info-details {
@@ -533,7 +552,7 @@ onUnmounted(() => {
   }
 
   .info-hero__intro p {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 500;
     line-height: 1.9;
   }
@@ -541,7 +560,7 @@ onUnmounted(() => {
   .info-hero__deco {
     top: calc(50% - 120px);
     width: 420px;
-    opacity: 0.14;
+    height: 420px;
   }
 
   .info-details {

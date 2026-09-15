@@ -3,11 +3,6 @@ import { onMounted, onUnmounted, ref, watch } from "vue";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import {
-  MeshDiscardMaterial,
-  MeshTransmissionMaterial,
-  useFBO,
-} from "@pmndrs/vanilla";
 
 import glassUrl from "@/asset/image/about-me/glass.glb?url";
 
@@ -26,36 +21,42 @@ let frameId;
 let resizeObserver;
 let intersectionObserver;
 let isVisible = true;
-let discardMaterial;
-let fboMain;
-let fboBack;
-const transmissionMeshes = [];
-const pageBackground = new THREE.Color(0xfffefc);
+let needsRender = true;
 
-function lerp(a, b, t) {
-  return a + (b - a) * t;
+// lerp(起始值, 結束值, 進度) → 進度 0=起始，1=結束
+function lerp(start, end, progress) {
+  return start + (end - start) * progress;
 }
 
 function applyProgress(t) {
   if (!model || !camera) return;
 
+  // p：捲動進度 0→1（由 InfoView 的 ScrollTrigger 驅動）
   const p = Math.min(1, Math.max(0, t));
   const isMobile = camera.aspect < 0.75;
 
-  model.rotation.x = lerp(0.05, 0.42, p);
-  model.rotation.y = lerp(0.15, Math.PI * 1.15, p);
-  model.rotation.z = lerp(0, -0.08, p);
+  // 旋轉：lerp(起始角度, 結束角度, p)
+  model.rotation.x = lerp(0.05, 0.42, p); // 前後傾
+  model.rotation.y = lerp(0.15, Math.PI * 1.15, p); // 左右轉
+  model.rotation.z = lerp(0, -0.08, p); // 側傾
 
-  model.position.x = isMobile ? lerp(0, 0.98, p) : lerp(0, 2.35, p);
+  // 位置：lerp(起始, 結束, p)｜x 正=右、y 正=上、z 正=靠近鏡頭
+  model.position.x = isMobile
+    ? lerp(0, 0.98, p) // 手機：左→右
+    : lerp(0, 2.35, p); // 桌機：左→右
   model.position.y = isMobile
-    ? lerp(-0.15, 1.1, p)
-    : lerp(-0.15, -0.35, p);
-  model.position.z = lerp(0, -0.4, p);
+    ? lerp(-0.15, 1.1, p) // 手機：下→上
+    : lerp(-0.5, -0.4, p); // 桌機：微往下
+  model.position.z = lerp(0, -0.4, p); // 稍微往後
 
-  const scale = lerp(1, 1.18, p) * (isMobile ? 1.2 : 1);
+  // 大小：lerp(起始倍率, 結束倍率, p)
+  const scale = lerp(1.08, 1.18, p) * (isMobile ? 1.2 : 1);
   model.scale.setScalar(model.userData.baseScale * scale);
 
-  camera.position.z = isMobile ? lerp(9.5, 8.8, p) : lerp(5.2, 4.6, p);
+  // 相機遠近：數字越大＝拉越遠
+  camera.position.z = isMobile
+    ? lerp(9.5, 8.8, p)
+    : lerp(5.2, 4.6, p);
 }
 
 function fitModel(object) {
@@ -79,48 +80,54 @@ function enhanceGlassMaterials(root) {
       ? child.material
       : [child.material];
     const source = sourceMats[0];
-    const name = (source?.name || child.name || "").toLowerCase();
+    const name = [child.name, child.parent?.name, source?.name]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
     const looksLikeLiquid =
-      name.includes("water") ||
       name.includes("liquid") ||
-      name.includes("fluid");
+      name.includes("water") ||
+      name.includes("fluid") ||
+      name.includes("drink_liquid");
 
-    const thickness = looksLikeLiquid ? 0.9 : 1.35;
-    const backsideThickness = looksLikeLiquid ? 0.45 : 0.35;
-
-    const material = new MeshTransmissionMaterial({
-      samples: 8,
-      transmission: 0,
-      _transmission: 1,
-      thickness,
-      roughness: looksLikeLiquid ? 0.06 : 0.02,
-      chromaticAberration: looksLikeLiquid ? 0.015 : 0.04,
-      anisotropicBlur: 0.15,
-      attenuationDistance: looksLikeLiquid ? 1.8 : Infinity,
-      attenuationColor: new THREE.Color(
-        looksLikeLiquid ? 0xb8e8f5 : 0xffffff,
-      ),
-    });
-
-    material.color.set(looksLikeLiquid ? 0xd8f4ff : 0xffffff);
-    material.metalness = 0;
-    material.roughness = looksLikeLiquid ? 0.06 : 0.02;
-    material.ior = looksLikeLiquid ? 1.33 : 1.5;
-    material.thickness = thickness;
-    material.envMapIntensity = 0.55;
-    material.clearcoat = looksLikeLiquid ? 0.15 : 0.4;
-    material.clearcoatRoughness = 0.12;
-    material.transparent = true;
-    material.depthWrite = false;
-    material.side = THREE.FrontSide;
-
-    child.material = material;
     child.castShadow = false;
     child.receiveShadow = false;
-    child.userData.transmissionMaterial = material;
-    child.userData.thickness = thickness;
-    child.userData.backsideThickness = backsideThickness;
-    transmissionMeshes.push(child);
+
+    if (looksLikeLiquid) {
+      child.material = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(0x4aa8d8),
+        metalness: 0,
+        roughness: 0.15,
+        transparent: true,
+        opacity: 0.9,
+        depthWrite: true,
+        side: THREE.DoubleSide,
+        envMapIntensity: 0.35,
+        clearcoat: 0.4,
+        clearcoatRoughness: 0.2,
+      });
+      child.renderOrder = 1;
+      return;
+    }
+
+    child.material = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      metalness: 0,
+      roughness: 0,
+      transmission: 0.86,
+      thickness: 0.85,
+      ior: 1.52,
+      transparent: true,
+      opacity: 1,
+      depthWrite: false,
+      side: THREE.FrontSide,
+      envMapIntensity: 2.4,
+      clearcoat: 1,
+      clearcoatRoughness: 0.03,
+      specularIntensity: 1,
+      reflectivity: 1,
+    });
+    child.renderOrder = 2;
   });
 }
 
@@ -134,63 +141,23 @@ function resize() {
   camera.updateProjectionMatrix();
   renderer.setSize(width, height, false);
   applyProgress(props.progress);
+  needsRender = true;
+  scheduleRender();
 }
 
-function updateTransmissionBuffers(time) {
-  if (!renderer || !scene || !camera || !fboMain || !discardMaterial) return;
-
-  const oldTone = renderer.toneMapping;
-  const oldBackground = scene.background;
-  const oldClearColor = new THREE.Color();
-  const oldClearAlpha = renderer.getClearAlpha();
-  renderer.getClearColor(oldClearColor);
-
-  renderer.toneMapping = THREE.NoToneMapping;
-  scene.background = pageBackground;
-  renderer.setClearColor(pageBackground, 1);
-
-  for (const mesh of transmissionMeshes) {
-    mesh.userData.transmissionMaterial.time = time;
-    mesh.material = discardMaterial;
-  }
-
-  renderer.setRenderTarget(fboBack);
-  renderer.clear(true, true, true);
-  renderer.render(scene, camera);
-
-  for (const mesh of transmissionMeshes) {
-    const material = mesh.userData.transmissionMaterial;
-    material.buffer = fboBack.texture;
-    material.thickness = mesh.userData.backsideThickness;
-    material.side = THREE.BackSide;
-    mesh.material = material;
-  }
-
-  renderer.setRenderTarget(fboMain);
-  renderer.clear(true, true, true);
-  renderer.render(scene, camera);
-
-  for (const mesh of transmissionMeshes) {
-    const material = mesh.userData.transmissionMaterial;
-    material.buffer = fboMain.texture;
-    material.thickness = mesh.userData.thickness;
-    material.side = THREE.FrontSide;
-    mesh.material = material;
-  }
-
-  scene.background = oldBackground;
-  renderer.setRenderTarget(null);
-  renderer.setClearColor(oldClearColor, oldClearAlpha);
-  renderer.toneMapping = oldTone;
+function scheduleRender() {
+  if (frameId || !isVisible) return;
+  frameId = window.requestAnimationFrame(renderOnce);
 }
 
-function renderLoop(time = 0) {
+function renderOnce() {
   frameId = undefined;
   if (!isVisible || !renderer || !scene || !camera) return;
+  if (!needsRender) return;
 
-  updateTransmissionBuffers(time * 0.001);
+  applyProgress(props.progress);
   renderer.render(scene, camera);
-  frameId = window.requestAnimationFrame(renderLoop);
+  needsRender = false;
 }
 
 onMounted(async () => {
@@ -209,7 +176,7 @@ onMounted(async () => {
     alpha: true,
     powerPreference: "high-performance",
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(width, height, false);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -217,21 +184,20 @@ onMounted(async () => {
   renderer.toneMappingExposure = 1.05;
   host.value.appendChild(renderer.domElement);
 
-  discardMaterial = new MeshDiscardMaterial();
-  fboBack = useFBO(1024, 1024);
-  fboMain = useFBO(1024, 1024);
-
   const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.02).texture;
   pmrem.dispose();
   scene.background = null;
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
-  const key = new THREE.DirectionalLight(0xffffff, 0.85);
-  key.position.set(3, 5, 4);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+  const key = new THREE.DirectionalLight(0xffffff, 1.35);
+  key.position.set(3.5, 5.5, 4);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0xd7f7ff, 0.3);
-  fill.position.set(-4, 1, -2);
+  const rim = new THREE.DirectionalLight(0xffffff, 1.1);
+  rim.position.set(-3, 2.5, 5);
+  scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xdcefff, 0.55);
+  fill.position.set(2, -1.5, -3);
   scene.add(fill);
 
   try {
@@ -242,6 +208,8 @@ onMounted(async () => {
     model = glass;
     scene.add(model);
     applyProgress(props.progress);
+    needsRender = true;
+    scheduleRender();
   } catch (error) {
     console.error("Failed to load glass scene", error);
   }
@@ -251,22 +219,23 @@ onMounted(async () => {
 
   intersectionObserver = new IntersectionObserver(([entry]) => {
     isVisible = entry.isIntersecting;
-
-    if (isVisible && !frameId) {
-      renderLoop();
-    } else if (!isVisible && frameId) {
+    if (isVisible) {
+      needsRender = true;
+      scheduleRender();
+    } else if (frameId) {
       window.cancelAnimationFrame(frameId);
       frameId = undefined;
     }
   });
   intersectionObserver.observe(host.value);
-
-  renderLoop();
 });
 
 watch(
   () => props.progress,
-  (value) => applyProgress(value),
+  () => {
+    needsRender = true;
+    scheduleRender();
+  },
 );
 
 onUnmounted(() => {
@@ -284,11 +253,6 @@ onUnmounted(() => {
       mats.forEach((mat) => mat?.dispose());
     });
   }
-
-  transmissionMeshes.length = 0;
-  discardMaterial?.dispose();
-  fboBack?.dispose();
-  fboMain?.dispose();
 
   scene?.environment?.dispose();
   renderer?.dispose();
