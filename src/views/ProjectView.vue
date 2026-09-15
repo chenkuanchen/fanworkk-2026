@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
 import backIcon from "@/asset/image/icon/icon_back.svg";
@@ -126,34 +126,61 @@ const projects = [
   },
 ];
 
-const projectMediaModules = import.meta.glob(
+const projectMediaLoaders = import.meta.glob(
   "@/asset/image/project/**/*.{jpg,jpeg,png,webp,gif,mp4}",
-  { eager: true, import: "default" },
 );
 
 const route = useRoute();
 const isDetailsExpanded = ref(false);
 const showToTop = ref(false);
 const projectPage = ref(null);
+const media = ref([]);
 let imageObserver;
+let videoObserver;
+let mediaRequestId = 0;
+
 const project = computed(() =>
   projects.find((item) => item.id === String(route.params.id).toLowerCase()),
 );
-const media = computed(() => {
-  if (!project.value) return [];
 
-  return Object.entries(projectMediaModules)
+async function loadProjectMedia() {
+  const requestId = ++mediaRequestId;
+
+  if (!project.value) {
+    media.value = [];
+    return;
+  }
+
+  const currentProject = project.value;
+  const entries = Object.entries(projectMediaLoaders)
     .filter(([path]) =>
-      path.toLowerCase().includes(`/${project.value.id}-`),
+      path.toLowerCase().includes(`/${currentProject.id}-`),
     )
-    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB))
-    .map(([path, src], index) => ({
-      id: path,
-      src,
-      alt: `${project.value.title} 專案圖片 ${index + 1}`,
-      isVideo: path.toLowerCase().endsWith(".mp4"),
-    }));
-});
+    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB));
+
+  const nextMedia = await Promise.all(
+    entries.map(async ([path, loadMedia], index) => {
+      const module = await loadMedia();
+      return {
+        id: path,
+        src: module.default,
+        alt: `${currentProject.title} 專案圖片 ${index + 1}`,
+        isVideo: path.toLowerCase().endsWith(".mp4"),
+      };
+    }),
+  );
+
+  if (requestId !== mediaRequestId) return;
+  media.value = nextMedia;
+}
+
+watch(
+  () => route.params.id,
+  () => {
+    loadProjectMedia();
+  },
+  { immediate: true },
+);
 
 function updateToTopVisibility() {
   showToTop.value = window.scrollY > 400;
@@ -171,9 +198,48 @@ function registerProjectMedia(event) {
   imageObserver?.observe(mediaElement);
 }
 
+function bindVideos() {
+  videoObserver?.disconnect();
+
+  if (!projectPage.value) return;
+
+  const videos = projectPage.value.querySelectorAll("video[data-src]");
+  if (!videos.length) return;
+
+  videoObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target;
+        const src = video.dataset.src;
+        if (!src) return;
+
+        if (entry.isIntersecting) {
+          if (video.src !== src) {
+            video.src = src;
+            video.load();
+          }
+          video.play().catch(() => {});
+          return;
+        }
+
+        video.pause();
+      });
+    },
+    { rootMargin: "200px 0px", threshold: 0.1 },
+  );
+
+  videos.forEach((video) => videoObserver.observe(video));
+}
+
+watch(media, async () => {
+  await Promise.resolve();
+  bindVideos();
+});
+
 onMounted(() => {
   window.addEventListener("scroll", updateToTopVisibility, { passive: true });
   updateToTopVisibility();
+  bindVideos();
 
   if (
     !projectPage.value ||
@@ -203,6 +269,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", updateToTopVisibility);
   imageObserver?.disconnect();
+  videoObserver?.disconnect();
 });
 </script>
 
@@ -287,19 +354,20 @@ onBeforeUnmount(() => {
         >
           <video
             v-if="item.isVideo"
-            :src="item.src"
+            :data-src="item.src"
             :aria-label="item.alt"
-            autoplay
             loop
             muted
             playsinline
-            preload="auto"
+            preload="none"
             @loadedmetadata="registerProjectMedia"
           ></video>
           <img
             v-else
             :src="item.src"
             :alt="item.alt"
+            loading="lazy"
+            decoding="async"
             @load="registerProjectMedia"
           />
         </figure>
@@ -384,6 +452,7 @@ onBeforeUnmount(() => {
 }
 
 .project-hero h1 {
+  font-family: var(--font-en), 'Toge Gothic', var(--font-tc), sans-serif;
   font-size: clamp(44px, 3.15vw, 60px);
   font-weight: 700;
   line-height: 1;
@@ -601,6 +670,7 @@ onBeforeUnmount(() => {
 .back-link {
   display: flex;
   align-items: center;
+  margin-left: calc(var(--project-grid-cell) + 1px);
 }
 
 .to-top-button {
@@ -646,6 +716,10 @@ onBeforeUnmount(() => {
     margin-left: 0;
   }
 
+  .back-link {
+    margin-left: 0;
+  }
+
   .project-meta,
   .project-details__description,
   .project-details__credits,
@@ -677,6 +751,10 @@ onBeforeUnmount(() => {
   .project-page {
     --grid-inset: 8px;
     --grid-pair: 4px;
+  }
+
+  .to-top-button {
+    right: var(--grid-inset);
   }
 }
 
