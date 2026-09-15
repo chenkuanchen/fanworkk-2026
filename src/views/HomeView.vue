@@ -180,7 +180,7 @@ onUnmounted(() => {
           </div>
           <div class="hero-card__face hero-card__face--back">
             <p class="hero-card__intro">
-              多媒體設計師，現居台中。<br />
+              視覺設計師，現居台中。<br /><br />
               作品橫跨動畫、3D 以及平面。喜歡探究有趣的設計數位體驗，善於轉譯訊息為多面向、能被感受與記憶的產物。
             </p>
             <RouterLink class="hero-card__more" :to="{ name: 'info' }">
@@ -211,6 +211,8 @@ onUnmounted(() => {
             class="work__image"
             :src="work.image"
             :alt="work.titleEn ? `${work.title} ${work.titleEn}` : work.title"
+            loading="lazy"
+            decoding="async"
             @load="revealFeaturedImage"
           />
         </div>
@@ -607,11 +609,11 @@ main {
   }
 
   .work__link {
-    grid-column: 4 / span 2;
+    grid-column: 2 / span 3;
     grid-row: 2;
-    justify-self: end;
-    margin-top: 24px;
-    padding-right: var(--grid-pair);
+    justify-self: start;
+    margin-top: 36px;
+    padding-right: 0;
     font-size: 12px;
     line-height: 16px;
     white-space: nowrap;
