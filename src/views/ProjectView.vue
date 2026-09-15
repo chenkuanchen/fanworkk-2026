@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
 import backIcon from "@/asset/image/icon/icon_back.svg";
@@ -130,18 +130,32 @@ const projectMediaLoaders = import.meta.glob(
   "@/asset/image/project/**/*.{jpg,jpeg,png,webp,gif,mp4}",
 );
 
+/** Design-pixel width of overlay videos (filename → width). */
+const OVERLAY_VIDEO_WIDTHS = {
+  "v07_image-05_video.mp4": 1700,
+  "g01_image-09-video.mp4": 1920,
+};
+
 const route = useRoute();
 const isDetailsExpanded = ref(false);
 const showToTop = ref(false);
 const projectPage = ref(null);
 const media = ref([]);
+const playingVideoId = ref(null);
 let imageObserver;
-let videoObserver;
 let mediaRequestId = 0;
 
 const project = computed(() =>
   projects.find((item) => item.id === String(route.params.id).toLowerCase()),
 );
+
+function fileNameOf(path) {
+  return path.replace(/\\/g, "/").split("/").pop() || "";
+}
+
+function stemOf(fileName) {
+  return fileName.replace(/\.[^.]+$/, "");
+}
 
 async function loadProjectMedia() {
   const requestId = ++mediaRequestId;
@@ -155,28 +169,114 @@ async function loadProjectMedia() {
   const entries = Object.entries(projectMediaLoaders)
     .filter(([path]) => {
       const normalized = path.toLowerCase().replace(/\\/g, "/");
+      if (normalized.includes(".original.")) return false;
       const id = currentProject.id.toLowerCase();
       return (
-        normalized.includes(`/${id}-`) ||
-        normalized.includes(`/${id}_`)
+        normalized.includes(`/${id}-`) || normalized.includes(`/${id}_`)
       );
     })
     .sort(([pathA], [pathB]) => pathA.localeCompare(pathB));
 
-  const nextMedia = await Promise.all(
-    entries.map(async ([path, loadMedia], index) => {
+  const loaded = await Promise.all(
+    entries.map(async ([path, loadMedia]) => {
       const module = await loadMedia();
       return {
-        id: path,
+        path,
         src: module.default,
-        alt: `${currentProject.title} 專案圖片 ${index + 1}`,
-        isVideo: path.toLowerCase().endsWith(".mp4"),
+        fileName: fileNameOf(path),
       };
     }),
   );
 
   if (requestId !== mediaRequestId) return;
+
+  const overlays = new Map();
+  const images = new Map();
+  const standaloneVideos = [];
+
+  for (const item of loaded) {
+    const lowerName = item.fileName.toLowerCase();
+    const overlayMatch = lowerName.match(/^(.*)[_-]video\.mp4$/);
+
+    if (overlayMatch) {
+      overlays.set(overlayMatch[1], item);
+      continue;
+    }
+
+    if (lowerName.endsWith(".mp4")) {
+      standaloneVideos.push(item);
+      continue;
+    }
+
+    images.set(stemOf(lowerName), item);
+  }
+
+  const usedImageStems = new Set();
+  const nextMedia = [];
+
+  for (const [stem, overlay] of overlays) {
+    const background = images.get(stem);
+    if (!background) {
+      standaloneVideos.push(overlay);
+      continue;
+    }
+
+    usedImageStems.add(stem);
+    nextMedia.push({
+      id: overlay.path,
+      src: overlay.src,
+      bgSrc: background.src,
+      alt: `${currentProject.title} 專案影片`,
+      isVideo: true,
+      hasBackground: true,
+      clickToPlay: true,
+      videoWidthPx:
+        OVERLAY_VIDEO_WIDTHS[overlay.fileName.toLowerCase()] ?? null,
+      sortKey: background.path,
+    });
+  }
+
+  for (const [stem, image] of images) {
+    if (usedImageStems.has(stem)) continue;
+    nextMedia.push({
+      id: image.path,
+      src: image.src,
+      alt: `${currentProject.title} 專案圖片`,
+      isVideo: false,
+      hasBackground: false,
+      clickToPlay: false,
+      sortKey: image.path,
+    });
+  }
+
+  for (const video of standaloneVideos) {
+    nextMedia.push({
+      id: video.path,
+      src: video.src,
+      alt: `${currentProject.title} 專案影片`,
+      isVideo: true,
+      hasBackground: false,
+      clickToPlay: false,
+      sortKey: video.path,
+    });
+  }
+
+  nextMedia.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+  nextMedia.forEach((item, index) => {
+    item.alt = `${currentProject.title} 專案媒體 ${index + 1}`;
+  });
+
+  playingVideoId.value = null;
   media.value = nextMedia;
+
+  await nextTick();
+  const coverElement = projectPage.value?.querySelector(
+    ".project-media:first-child",
+  );
+  if (coverElement?.querySelector("video")) {
+    coverElement.classList.add("project-media--loaded");
+    imageObserver?.observe(coverElement);
+  }
 }
 
 watch(
@@ -196,55 +296,60 @@ function scrollToTop() {
 }
 
 function registerProjectMedia(event) {
-  const mediaElement = event.currentTarget.parentElement;
-  if (!mediaElement.matches(".project-media:first-child")) return;
+  const mediaElement = event.currentTarget.closest(".project-media");
+  if (!mediaElement?.matches(".project-media:first-child")) return;
 
   mediaElement.classList.add("project-media--loaded");
   imageObserver?.observe(mediaElement);
 }
 
-function bindVideos() {
-  videoObserver?.disconnect();
+function onOverlayBackgroundLoad(event, item) {
+  const figure = event.currentTarget.closest(".project-media");
+  if (!figure || !item.videoWidthPx) return;
 
-  if (!projectPage.value) return;
-
-  const videos = projectPage.value.querySelectorAll("video[data-src]");
-  if (!videos.length) return;
-
-  videoObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const video = entry.target;
-        const src = video.dataset.src;
-        if (!src) return;
-
-        if (entry.isIntersecting) {
-          if (video.src !== src) {
-            video.src = src;
-            video.load();
-          }
-          video.play().catch(() => {});
-          return;
-        }
-
-        video.pause();
-      });
-    },
-    { rootMargin: "200px 0px", threshold: 0.1 },
-  );
-
-  videos.forEach((video) => videoObserver.observe(video));
+  const naturalWidth = event.currentTarget.naturalWidth || 1;
+  figure.style.setProperty("--video-design-width", String(item.videoWidthPx));
+  figure.style.setProperty("--bg-natural-width", String(naturalWidth));
+  registerProjectMedia(event);
 }
 
-watch(media, async () => {
-  await Promise.resolve();
-  bindVideos();
-});
+function onVideoPlay(id) {
+  playingVideoId.value = id;
+}
+
+function onVideoPause(id, event) {
+  if (playingVideoId.value === id && event.currentTarget.paused) {
+    playingVideoId.value = null;
+  }
+}
+
+async function toggleVideo(item, event) {
+  const figure = event.currentTarget.closest(".project-media");
+  const video = figure?.querySelector("video");
+  if (!video) return;
+
+  if (!video.src) {
+    video.src = item.src;
+    video.load();
+  }
+
+  if (video.paused) {
+    try {
+      await video.play();
+      playingVideoId.value = item.id;
+    } catch {
+      playingVideoId.value = null;
+    }
+    return;
+  }
+
+  video.pause();
+  playingVideoId.value = null;
+}
 
 onMounted(() => {
   window.addEventListener("scroll", updateToTopVisibility, { passive: true });
   updateToTopVisibility();
-  bindVideos();
 
   if (
     !projectPage.value ||
@@ -274,7 +379,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", updateToTopVisibility);
   imageObserver?.disconnect();
-  videoObserver?.disconnect();
 });
 </script>
 
@@ -356,17 +460,53 @@ onBeforeUnmount(() => {
           v-for="item in media"
           :key="item.id"
           class="project-media"
+          :class="{
+            'project-media--video': item.isVideo,
+            'project-media--video-overlay': item.hasBackground,
+            'project-media--playing': playingVideoId === item.id,
+          }"
         >
-          <video
-            v-if="item.isVideo"
-            :data-src="item.src"
-            :aria-label="item.alt"
-            loop
-            muted
-            playsinline
-            preload="none"
-            @loadedmetadata="registerProjectMedia"
-          ></video>
+          <template v-if="item.hasBackground">
+            <img
+              class="project-media__bg"
+              :src="item.bgSrc"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              @load="onOverlayBackgroundLoad($event, item)"
+            />
+            <video
+              class="project-media__overlay-video"
+              :aria-label="item.alt"
+              loop
+              playsinline
+              preload="none"
+              @play="onVideoPlay(item.id)"
+              @pause="onVideoPause(item.id, $event)"
+              @click="toggleVideo(item, $event)"
+            ></video>
+            <button
+              v-show="playingVideoId !== item.id"
+              class="video-play-button"
+              type="button"
+              :aria-label="`播放 ${item.alt}`"
+              @click="toggleVideo(item, $event)"
+            >
+              <span class="video-play-button__icon" aria-hidden="true"></span>
+            </button>
+          </template>
+          <template v-else-if="item.isVideo">
+            <video
+              :src="item.src"
+              :aria-label="item.alt"
+              autoplay
+              loop
+              muted
+              playsinline
+              preload="metadata"
+              @loadedmetadata="registerProjectMedia"
+            ></video>
+          </template>
           <img
             v-else
             :src="item.src"
@@ -380,25 +520,28 @@ onBeforeUnmount(() => {
     </section>
 
     <footer class="project-footer">
-      <RouterLink
-        class="back-link"
-        :to="{ name: 'works' }"
-        aria-label="返回作品列表"
-      >
-        <img :src="backIcon" alt="" />
-      </RouterLink>
-
-      <Transition name="to-top">
-        <button
-          v-if="showToTop"
-          class="to-top-button"
-          type="button"
-          aria-label="回到頁面頂部"
-          @click="scrollToTop"
+      <div class="project-footer__nav">
+        <RouterLink
+          class="back-link"
+          :to="{ name: 'works' }"
+          aria-label="返回作品列表"
         >
-          <img :src="toTopIcon" alt="" />
-        </button>
-      </Transition>
+          <img :src="backIcon" alt="" />
+          <span class="back-link__label">back</span>
+        </RouterLink>
+
+        <Transition name="to-top">
+          <button
+            v-if="showToTop"
+            class="to-top-button"
+            type="button"
+            aria-label="回到頁面頂部"
+            @click="scrollToTop"
+          >
+            <img :src="toTopIcon" alt="" />
+          </button>
+        </Transition>
+      </div>
     </footer>
   </main>
 
@@ -648,10 +791,19 @@ onBeforeUnmount(() => {
   margin-bottom: 60px;
 }
 
-.project-media:first-child img,
-.project-media:first-child video {
+.project-media:first-child img {
   height: 100%;
   object-fit: cover;
+}
+
+.project-media:first-child video {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.project-media:first-child:has(> video) {
+  aspect-ratio: auto;
 }
 
 .project-media:not(:first-child) {
@@ -664,37 +816,111 @@ onBeforeUnmount(() => {
   display: block;
   width: 100%;
   height: auto;
-  vertical-align: bottom;
 }
 
 .project-media:has(> video) {
-  aspect-ratio: 16 / 9;
+  position: relative;
 }
 
 .project-media video {
-  height: 100%;
-  object-fit: cover;
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.project-media--video-overlay {
+  position: relative;
+}
+
+.project-media__bg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.project-media__overlay-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: calc(
+    100% * var(--video-design-width, 1700) / var(--bg-natural-width, 1920)
+  );
+  height: auto;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.project-media--video-overlay .video-play-button {
+  z-index: 2;
+}
+
+.video-play-button {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: rgb(0 0 0 / 18%);
+  cursor: pointer;
+}
+
+.video-play-button__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgb(255 254 252 / 92%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+}
+
+.video-play-button__icon::before {
+  display: block;
+  width: 0;
+  height: 0;
+  margin-left: 28px;
+  margin-top: 22px;
+  border-style: solid;
+  border-width: 14px 0 14px 22px;
+  border-color: transparent transparent transparent #000;
+  content: '';
 }
 
 .project-footer {
   display: flex;
   min-height: 120px;
   align-items: center;
-  justify-content: space-between;
-  padding: 42px calc(var(--grid-inset) + var(--grid-pair));
+  justify-content: flex-end;
+  padding: 42px calc(var(--grid-inset) + var(--grid-pair)) 42px var(--grid-inset);
+}
+
+/* 與 site-header__nav 相同：右側 20%，works/back 用 translateX(-100%) 對齊 */
+.project-footer__nav {
+  position: relative;
+  display: flex;
+  width: 20%;
+  align-items: center;
 }
 
 .back-link {
   display: flex;
   align-items: center;
-  margin-left: calc(var(--project-grid-cell) + 1px);
+  gap: 8px;
+  transform: translateX(-100%);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.back-link__label {
+  display: block;
 }
 
 .to-top-button {
-  position: relative;
+  position: absolute;
+  left: 100%;
   z-index: 25;
-  margin-left: auto;
-  margin-right: calc(-1 * var(--grid-pair));
+  transform: translateX(-100%);
 }
 
 .to-top-enter-active,
@@ -707,7 +933,7 @@ onBeforeUnmount(() => {
 .to-top-enter-from,
 .to-top-leave-to {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateX(-100%) translateY(8px);
 }
 
 .project-not-found {
@@ -731,10 +957,6 @@ onBeforeUnmount(() => {
   .project-summary {
     width: 100%;
     margin-top: 48px;
-    margin-left: 0;
-  }
-
-  .back-link {
     margin-left: 0;
   }
 
@@ -783,12 +1005,41 @@ onBeforeUnmount(() => {
     padding-top: 42px;
     padding-bottom: calc(48px + 12px);
   }
+
+  .back-link__label {
+    display: none;
+  }
 }
 
 @media (max-width: 600px) {
   .project-page {
     --grid-inset: 8px;
     --grid-pair: 4px;
+  }
+
+  .project-footer {
+    justify-content: flex-start;
+    padding: 42px calc(var(--grid-inset) + var(--grid-pair)) calc(48px + 12px);
+  }
+
+  .project-footer__nav {
+    width: 100%;
+  }
+
+  .back-link {
+    transform: none;
+  }
+
+  .to-top-button {
+    position: absolute;
+    right: 0;
+    left: auto;
+    transform: none;
+  }
+
+  .to-top-enter-from,
+  .to-top-leave-to {
+    transform: translateY(8px);
   }
 }
 
