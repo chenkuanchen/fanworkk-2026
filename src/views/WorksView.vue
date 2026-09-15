@@ -474,7 +474,7 @@ onUnmounted(() => {
 
   .works-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+    gap: 24px;
   }
 
   .work-card__details {
