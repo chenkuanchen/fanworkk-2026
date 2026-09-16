@@ -24,7 +24,7 @@
 
 @font-face {
   font-family: 'Toge Gothic';
-  src: url('../asset/font/TogeGothic/06TogeGothic-Bold.otf') format('opentype');
+  src: url('../asset/font/TogeGothic/TogeGothic-Bold-subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 700;
   font-display: swap;
