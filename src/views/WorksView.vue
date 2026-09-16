@@ -2,16 +2,21 @@
 import { nextTick, onMounted, onUnmounted, ref } from "vue";
 import { onBeforeRouteLeave, RouterLink } from "vue-router";
 
-import gameArtImage from "@/asset/image/works/G01_preview.jpg";
-import motionImage from "@/asset/image/works/M01_preview.jpg";
-import visualIdentityOne from "@/asset/image/works/V01_Preview.jpg";
-import visualIdentityTwo from "@/asset/image/works/V02_preview.jpg";
-import visualIdentityThree from "@/asset/image/works/V03_preview.jpg";
-import visualIdentityFour from "@/asset/image/works/V04_preview.jpg";
-import visualIdentityFive from "@/asset/image/works/V05_preview.jpg";
-import visualIdentitySix from "@/asset/image/works/V06_preview.jpg";
-import visualIdentitySeven from "@/asset/image/works/V07_preview.jpg";
-import websiteImage from "@/asset/image/works/W01_preview.jpg";
+import { pickResponsive } from "@/utils/responsiveImage.js";
+
+const worksModules = {
+  ...import.meta.glob("@/asset/image/works/*.{jpg,JPG,jpeg,webp}", {
+    eager: true,
+    import: "default",
+  }),
+  ...import.meta.glob("@/asset/image/works/*@*.webp", {
+    eager: true,
+    import: "default",
+  }),
+};
+
+const WORK_CARD_SIZES =
+  "(max-width: 600px) 94vw, (max-width: 1200px) 42vw, 38vw";
 
 const WORKS_SCROLL_KEY = "works-scroll-y";
 const WORKS_RETURN_ID_KEY = "works-return-id";
@@ -33,7 +38,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2026",
-    image: visualIdentityOne,
+    image: pickResponsive(worksModules, "V01_Preview.jpg"),
   },
   {
     id: "v02",
@@ -41,7 +46,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2026",
-    image: visualIdentityTwo,
+    image: pickResponsive(worksModules, "V02_preview.jpg"),
   },
   {
     id: "w01",
@@ -49,7 +54,7 @@ const works = [
     category: "Website",
     type: "Website",
     year: "2026",
-    image: websiteImage,
+    image: pickResponsive(worksModules, "W01_preview.jpg"),
   },
   {
     id: "v06",
@@ -57,7 +62,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: visualIdentitySix,
+    image: pickResponsive(worksModules, "V06_preview.jpg"),
   },
   {
     id: "v05",
@@ -65,7 +70,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: visualIdentityFive,
+    image: pickResponsive(worksModules, "V05_preview.jpg"),
   },
   {
     id: "v04",
@@ -73,7 +78,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: visualIdentityFour,
+    image: pickResponsive(worksModules, "V04_preview.jpg"),
   },
   {
     id: "v03",
@@ -81,7 +86,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: visualIdentityThree,
+    image: pickResponsive(worksModules, "V03_preview.jpg"),
   },
   {
     id: "v07",
@@ -89,7 +94,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Brand System Extension",
     year: "2024",
-    image: visualIdentitySeven,
+    image: pickResponsive(worksModules, "V07_preview.jpg"),
   },
   {
     id: "m01",
@@ -97,7 +102,7 @@ const works = [
     category: "Motion",
     type: "Motion",
     year: "2023",
-    image: motionImage,
+    image: pickResponsive(worksModules, "M01_preview.jpg"),
   },
   {
     id: "g01",
@@ -105,7 +110,7 @@ const works = [
     category: "Game Art",
     type: "Game Art",
     year: "2023",
-    image: gameArtImage,
+    image: pickResponsive(worksModules, "G01_preview.jpg"),
   },
 ];
 
@@ -272,11 +277,14 @@ onUnmounted(() => {
               >
                 <div class="work-card__media">
                   <img
-                    v-if="work.image"
+                    v-if="work.image?.src"
                     class="work-card__image"
-                    :src="work.image"
+                    :src="work.image.src"
+                    :srcset="work.image.srcset"
+                    :sizes="WORK_CARD_SIZES"
                     :alt="work.title"
-                    loading="lazy"
+                    :loading="work.id === 'v01' ? 'eager' : 'lazy'"
+                    :fetchpriority="work.id === 'v01' ? 'high' : undefined"
                     decoding="async"
                     @load="registerWorkImage"
                   />

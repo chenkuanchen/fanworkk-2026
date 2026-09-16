@@ -130,6 +130,11 @@ const projectMediaLoaders = import.meta.glob(
   "@/asset/image/project/**/*.{jpg,jpeg,png,webp,gif,mp4}",
 );
 
+const PROJECT_IMAGE_SIZES =
+  "(max-width: 960px) 94vw, (max-width: 1400px) 78vw, 72vw";
+const PROJECT_BODY_SIZES =
+  "(max-width: 960px) 94vw, (max-width: 1400px) 92vw, 88vw";
+
 /** Design-pixel width of overlay videos (filename → width). */
 const OVERLAY_VIDEO_WIDTHS = {
   "v07_image-05_video.mp4": 1700,
@@ -156,6 +161,20 @@ function fileNameOf(path) {
 
 function stemOf(fileName) {
   return fileName.replace(/\.[^.]+$/, "");
+}
+
+function buildSrcSet(variants) {
+  if (!variants?.length) return undefined;
+  return [...variants]
+    .sort((a, b) => a.width - b.width)
+    .map((v) => `${v.src} ${v.width}w`)
+    .join(", ");
+}
+
+function preferredSrc(variants, fallback) {
+  if (!variants?.length) return fallback;
+  const sorted = [...variants].sort((a, b) => a.width - b.width);
+  return sorted.find((v) => v.width >= 1600)?.src || sorted.at(-1).src;
 }
 
 async function loadProjectMedia() {
@@ -194,12 +213,22 @@ async function loadProjectMedia() {
   const overlays = new Map();
   const images = new Map();
   const posters = new Map();
+  const variantsByStem = new Map();
   const standaloneVideos = [];
 
   for (const item of loaded) {
     const lowerName = item.fileName.toLowerCase();
+    const variantMatch = lowerName.match(/^(.*)@(\d+)\.(webp|jpe?g|png)$/);
     const overlayMatch = lowerName.match(/^(.*)[_-]video\.mp4$/);
     const posterMatch = lowerName.match(/^(.*)_poster\.(jpe?g|png|webp)$/);
+
+    if (variantMatch) {
+      const stem = variantMatch[1];
+      const list = variantsByStem.get(stem) || [];
+      list.push({ width: Number(variantMatch[2]), src: item.src });
+      variantsByStem.set(stem, list);
+      continue;
+    }
 
     if (overlayMatch) {
       overlays.set(overlayMatch[1], item);
@@ -230,11 +259,18 @@ async function loadProjectMedia() {
     }
 
     usedImageStems.add(stem);
+    const bgVariants = variantsByStem.get(stem);
+    const posterFallback =
+      posters.get(stem)?.src ?? posters.get(`${stem}_video`)?.src ?? null;
+    const posterVariants =
+      variantsByStem.get(`${stem}_poster`) ||
+      variantsByStem.get(`${stem}_video_poster`);
     nextMedia.push({
       id: overlay.path,
       src: overlay.src,
-      bgSrc: background.src,
-      poster: posters.get(stem)?.src ?? posters.get(`${stem}_video`)?.src ?? null,
+      bgSrc: preferredSrc(bgVariants, background.src),
+      bgSrcset: buildSrcSet(bgVariants),
+      poster: preferredSrc(posterVariants, posterFallback),
       alt: `${currentProject.title} 專案影片`,
       isVideo: true,
       hasBackground: true,
@@ -247,9 +283,11 @@ async function loadProjectMedia() {
 
   for (const [stem, image] of images) {
     if (usedImageStems.has(stem)) continue;
+    const variants = variantsByStem.get(stem);
     nextMedia.push({
       id: image.path,
-      src: image.src,
+      src: preferredSrc(variants, image.src),
+      srcset: buildSrcSet(variants),
       alt: `${currentProject.title} 專案圖片`,
       isVideo: false,
       hasBackground: false,
@@ -260,10 +298,13 @@ async function loadProjectMedia() {
 
   for (const video of standaloneVideos) {
     const stem = stemOf(video.fileName.toLowerCase());
+    const posterVariants = variantsByStem.get(stem);
+    const posterItem = posters.get(stem);
     nextMedia.push({
       id: video.path,
       src: video.src,
-      poster: posters.get(stem)?.src ?? null,
+      poster: preferredSrc(posterVariants, posterItem?.src ?? null),
+      posterSrcset: buildSrcSet(posterVariants),
       alt: `${currentProject.title} 專案影片`,
       isVideo: true,
       hasBackground: false,
@@ -275,6 +316,8 @@ async function loadProjectMedia() {
   nextMedia.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
   nextMedia.forEach((item, index) => {
     item.alt = `${currentProject.title} 專案媒體 ${index + 1}`;
+    item.isCover = index === 0;
+    item.sizes = item.isCover ? PROJECT_IMAGE_SIZES : PROJECT_BODY_SIZES;
   });
 
   playingVideoId.value = null;
@@ -481,8 +524,11 @@ onBeforeUnmount(() => {
             <img
               class="project-media__bg"
               :src="item.bgSrc"
+              :srcset="item.bgSrcset"
+              :sizes="item.sizes"
               alt=""
-              loading="lazy"
+              :loading="item.isCover ? 'eager' : 'lazy'"
+              :fetchpriority="item.isCover ? 'high' : undefined"
               decoding="async"
               @load="onOverlayBackgroundLoad($event, item)"
             />
@@ -530,8 +576,11 @@ onBeforeUnmount(() => {
           <img
             v-else
             :src="item.src"
+            :srcset="item.srcset"
+            :sizes="item.sizes"
             :alt="item.alt"
-            loading="lazy"
+            :loading="item.isCover ? 'eager' : 'lazy'"
+            :fetchpriority="item.isCover ? 'high' : undefined"
             decoding="async"
             @load="registerProjectMedia"
           />
