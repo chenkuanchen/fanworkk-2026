@@ -5,7 +5,7 @@ import { onBeforeRouteLeave, RouterLink } from "vue-router";
 import { useLazyImages } from "@/composables/useLazyImages";
 
 const { urls: previewSrc, observe: observePreviewImage } = useLazyImages(
-  "@/asset/image/works/*.{jpg,jpeg,JPG,png,webp}",
+  import.meta.glob("@/asset/image/works/*.{jpg,jpeg,JPG,png,webp}"),
   { rootMargin: "320px 0px" },
 );
 

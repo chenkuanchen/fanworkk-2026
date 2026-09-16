@@ -2,10 +2,10 @@ import { onUnmounted, reactive } from "vue";
 
 /**
  * Load image URLs from a Vite glob only when an element nears the viewport.
+ * Pass modules from a literal import.meta.glob(...) at the call site.
  */
-export function useLazyImages(globPattern, options = {}) {
+export function useLazyImages(modules, options = {}) {
   const { rootMargin = "240px 0px", threshold = 0.01 } = options;
-  const modules = import.meta.glob(globPattern);
   const urls = reactive({});
   const pending = new Map();
   const observers = new Map();

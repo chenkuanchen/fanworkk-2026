@@ -11,7 +11,7 @@ import { useLazyImages } from "@/composables/useLazyImages";
 gsap.registerPlugin(ScrollTrigger);
 
 const { urls: featureSrc, observe: observeFeatureImage } = useLazyImages(
-  "@/asset/image/destop/*.{jpg,jpeg,JPG,png,webp}",
+  import.meta.glob("@/asset/image/destop/*.{jpg,jpeg,JPG,png,webp}"),
 );
 
 const heroCard = ref(null);
