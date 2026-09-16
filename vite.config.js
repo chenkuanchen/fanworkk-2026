@@ -5,15 +5,15 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: '/fanworkk-2026/',
   plugins: [
     vue(),
-    vueDevTools({ launchEditor: false, componentInspector: false }),
-  ],
+    mode === 'development' && vueDevTools(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-})
+}))
