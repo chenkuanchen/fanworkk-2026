@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
 import backIcon from "@/asset/image/icon/icon_back.svg";
@@ -142,6 +142,7 @@ const showToTop = ref(false);
 const projectPage = ref(null);
 const media = ref([]);
 const playingVideoId = ref(null);
+const activatedVideos = reactive({});
 let imageObserver;
 let mediaRequestId = 0;
 
@@ -192,14 +193,21 @@ async function loadProjectMedia() {
 
   const overlays = new Map();
   const images = new Map();
+  const posters = new Map();
   const standaloneVideos = [];
 
   for (const item of loaded) {
     const lowerName = item.fileName.toLowerCase();
     const overlayMatch = lowerName.match(/^(.*)[_-]video\.mp4$/);
+    const posterMatch = lowerName.match(/^(.*)_poster\.(jpe?g|png|webp)$/);
 
     if (overlayMatch) {
       overlays.set(overlayMatch[1], item);
+      continue;
+    }
+
+    if (posterMatch) {
+      posters.set(posterMatch[1], item);
       continue;
     }
 
@@ -226,6 +234,7 @@ async function loadProjectMedia() {
       id: overlay.path,
       src: overlay.src,
       bgSrc: background.src,
+      poster: posters.get(stem)?.src ?? posters.get(`${stem}_video`)?.src ?? null,
       alt: `${currentProject.title} 專案影片`,
       isVideo: true,
       hasBackground: true,
@@ -250,13 +259,15 @@ async function loadProjectMedia() {
   }
 
   for (const video of standaloneVideos) {
+    const stem = stemOf(video.fileName.toLowerCase());
     nextMedia.push({
       id: video.path,
       src: video.src,
+      poster: posters.get(stem)?.src ?? null,
       alt: `${currentProject.title} 專案影片`,
       isVideo: true,
       hasBackground: false,
-      clickToPlay: false,
+      clickToPlay: true,
       sortKey: video.path,
     });
   }
@@ -267,6 +278,9 @@ async function loadProjectMedia() {
   });
 
   playingVideoId.value = null;
+  Object.keys(activatedVideos).forEach((key) => {
+    delete activatedVideos[key];
+  });
   media.value = nextMedia;
 
   await nextTick();
@@ -313,17 +327,7 @@ function onOverlayBackgroundLoad(event, item) {
   registerProjectMedia(event);
 }
 
-function onVideoPlay(id) {
-  playingVideoId.value = id;
-}
-
-function onVideoPause(id, event) {
-  if (playingVideoId.value === id && event.currentTarget.paused) {
-    playingVideoId.value = null;
-  }
-}
-
-async function toggleVideo(item, event) {
+async function activateVideo(item, event) {
   const figure = event.currentTarget.closest(".project-media");
   const video = figure?.querySelector("video");
   if (!video) return;
@@ -333,18 +337,25 @@ async function toggleVideo(item, event) {
     video.load();
   }
 
-  if (video.paused) {
-    try {
-      await video.play();
-      playingVideoId.value = item.id;
-    } catch {
-      playingVideoId.value = null;
-    }
-    return;
-  }
+  activatedVideos[item.id] = true;
 
-  video.pause();
-  playingVideoId.value = null;
+  try {
+    await video.play();
+    playingVideoId.value = item.id;
+  } catch {
+    playingVideoId.value = null;
+  }
+}
+
+function onVideoPlay(id) {
+  playingVideoId.value = id;
+  activatedVideos[id] = true;
+}
+
+function onVideoPause(id, event) {
+  if (playingVideoId.value === id && event.currentTarget.paused) {
+    playingVideoId.value = null;
+  }
 }
 
 onMounted(() => {
@@ -478,34 +489,43 @@ onBeforeUnmount(() => {
             <video
               class="project-media__overlay-video"
               :aria-label="item.alt"
-              loop
+              :poster="item.poster || undefined"
+              :controls="!!activatedVideos[item.id]"
               playsinline
               preload="none"
               @play="onVideoPlay(item.id)"
               @pause="onVideoPause(item.id, $event)"
-              @click="toggleVideo(item, $event)"
             ></video>
             <button
-              v-show="playingVideoId !== item.id"
+              v-show="!activatedVideos[item.id]"
               class="video-play-button"
               type="button"
               :aria-label="`播放 ${item.alt}`"
-              @click="toggleVideo(item, $event)"
+              @click="activateVideo(item, $event)"
             >
               <span class="video-play-button__icon" aria-hidden="true"></span>
             </button>
           </template>
           <template v-else-if="item.isVideo">
             <video
-              :src="item.src"
               :aria-label="item.alt"
-              autoplay
-              loop
-              muted
+              :poster="item.poster || undefined"
+              :controls="!!activatedVideos[item.id]"
               playsinline
-              preload="metadata"
+              preload="none"
+              @play="onVideoPlay(item.id)"
+              @pause="onVideoPause(item.id, $event)"
               @loadedmetadata="registerProjectMedia"
             ></video>
+            <button
+              v-show="!activatedVideos[item.id]"
+              class="video-play-button"
+              type="button"
+              :aria-label="`播放 ${item.alt}`"
+              @click="activateVideo(item, $event)"
+            >
+              <span class="video-play-button__icon" aria-hidden="true"></span>
+            </button>
           </template>
           <img
             v-else
@@ -798,12 +818,12 @@ onBeforeUnmount(() => {
 
 .project-media:first-child video {
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: contain;
 }
 
 .project-media:first-child:has(> video) {
-  aspect-ratio: auto;
+  aspect-ratio: 16 / 9;
 }
 
 .project-media:not(:first-child) {
@@ -822,8 +842,20 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
+.project-media--video:not(.project-media--video-overlay) {
+  aspect-ratio: 16 / 9;
+  background: #111;
+}
+
+.project-media--video:not(.project-media--video-overlay) > video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .project-media video {
-  cursor: pointer;
   object-fit: contain;
 }
 
