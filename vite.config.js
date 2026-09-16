@@ -9,7 +9,7 @@ export default defineConfig({
   base: '/fanworkk-2026/',
   plugins: [
     vue(),
-    vueDevTools({ launchEditor: false, componentInspector: false }),
+    vueDevTools(),
   ],
   resolve: {
     alias: {

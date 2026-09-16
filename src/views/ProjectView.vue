@@ -158,16 +158,39 @@ function stemOf(fileName) {
   return fileName.replace(/\.[^.]+$/, "");
 }
 
-function mediaLoadPriority(path) {
-  const normalized = path.toLowerCase();
-  if (normalized.includes("_cover.")) return 0;
-  if (/\.(jpe?g|png|webp|gif)$/.test(normalized)) return 1;
-  if (normalized.includes("_poster.")) return 2;
-  if (normalized.endsWith(".mp4")) return 3;
-  return 4;
-}
+async function loadProjectMedia() {
+  const requestId = ++mediaRequestId;
 
-function buildProjectMedia(loaded, currentProject) {
+  if (!project.value) {
+    media.value = [];
+    return;
+  }
+
+  const currentProject = project.value;
+  const entries = Object.entries(projectMediaLoaders)
+    .filter(([path]) => {
+      const normalized = path.toLowerCase().replace(/\\/g, "/");
+      if (normalized.includes(".original.")) return false;
+      const id = currentProject.id.toLowerCase();
+      return (
+        normalized.includes(`/${id}-`) || normalized.includes(`/${id}_`)
+      );
+    })
+    .sort(([pathA], [pathB]) => pathA.localeCompare(pathB));
+
+  const loaded = await Promise.all(
+    entries.map(async ([path, loadMedia]) => {
+      const module = await loadMedia();
+      return {
+        path,
+        src: module.default,
+        fileName: fileNameOf(path),
+      };
+    }),
+  );
+
+  if (requestId !== mediaRequestId) return;
+
   const overlays = new Map();
   const images = new Map();
   const posters = new Map();
@@ -254,82 +277,11 @@ function buildProjectMedia(loaded, currentProject) {
     item.alt = `${currentProject.title} 專案媒體 ${index + 1}`;
   });
 
-  return nextMedia;
-}
-
-async function loadMediaEntry([path, loadMedia]) {
-  const module = await loadMedia();
-  return {
-    path,
-    src: module.default,
-    fileName: fileNameOf(path),
-  };
-}
-
-async function loadProjectMedia() {
-  const requestId = ++mediaRequestId;
-
-  if (!project.value) {
-    media.value = [];
-    return;
-  }
-
-  const currentProject = project.value;
   playingVideoId.value = null;
   Object.keys(activatedVideos).forEach((key) => {
     delete activatedVideos[key];
   });
-  media.value = [];
-
-  const entries = Object.entries(projectMediaLoaders)
-    .filter(([path]) => {
-      const normalized = path.toLowerCase().replace(/\\/g, "/");
-      if (normalized.includes(".original.")) return false;
-      const id = currentProject.id.toLowerCase();
-      return (
-        normalized.includes(`/${id}-`) || normalized.includes(`/${id}_`)
-      );
-    })
-    .sort(([pathA], [pathB]) => {
-      const diff = mediaLoadPriority(pathA) - mediaLoadPriority(pathB);
-      return diff !== 0 ? diff : pathA.localeCompare(pathB);
-    });
-
-  const imageEntries = entries.filter(([path]) => mediaLoadPriority(path) === 1);
-  const coverEntry = entries.find(([path]) =>
-    path.toLowerCase().includes("_cover."),
-  );
-  const firstEntries = coverEntry ? [coverEntry] : imageEntries.slice(0, 1);
-  const remainingImages = imageEntries.filter(
-    ([path]) => !firstEntries.some(([firstPath]) => firstPath === path),
-  );
-  const deferredEntries = entries.filter(
-    ([path]) => mediaLoadPriority(path) >= 2,
-  );
-
-  const loaded = [];
-
-  for (const entry of firstEntries) {
-    if (requestId !== mediaRequestId) return;
-    loaded.push(await loadMediaEntry(entry));
-    media.value = buildProjectMedia(loaded, currentProject);
-  }
-
-  for (let index = 0; index < remainingImages.length; index += 3) {
-    if (requestId !== mediaRequestId) return;
-    const batch = await Promise.all(
-      remainingImages.slice(index, index + 3).map(loadMediaEntry),
-    );
-    loaded.push(...batch);
-    media.value = buildProjectMedia(loaded, currentProject);
-  }
-
-  if (deferredEntries.length) {
-    if (requestId !== mediaRequestId) return;
-    const batch = await Promise.all(deferredEntries.map(loadMediaEntry));
-    loaded.push(...batch);
-    media.value = buildProjectMedia(loaded, currentProject);
-  }
+  media.value = nextMedia;
 
   await nextTick();
   const coverElement = projectPage.value?.querySelector(
@@ -516,7 +468,7 @@ onBeforeUnmount(() => {
       <p class="project-code">{{ project.code }}</p>
       <div class="project-media-list">
         <figure
-          v-for="(item, mediaIndex) in media"
+          v-for="item in media"
           :key="item.id"
           class="project-media"
           :class="{
@@ -530,8 +482,7 @@ onBeforeUnmount(() => {
               class="project-media__bg"
               :src="item.bgSrc"
               alt=""
-              :loading="mediaIndex === 0 ? 'eager' : 'lazy'"
-              :fetchpriority="mediaIndex === 0 ? 'high' : 'auto'"
+              loading="lazy"
               decoding="async"
               @load="onOverlayBackgroundLoad($event, item)"
             />
@@ -580,8 +531,7 @@ onBeforeUnmount(() => {
             v-else
             :src="item.src"
             :alt="item.alt"
-            :loading="mediaIndex === 0 ? 'eager' : 'lazy'"
-            :fetchpriority="mediaIndex === 0 ? 'high' : 'auto'"
+            loading="lazy"
             decoding="async"
             @load="registerProjectMedia"
           />
