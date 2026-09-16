@@ -6,11 +6,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import heroStart from "@/asset/image/destop/hero-filp-water-start.svg";
 import enterIcon from "@/asset/image/icon/icon_enter.svg";
-import featureOne from "@/asset/image/destop/feature-1.jpg";
-import featureTwo from "@/asset/image/destop/feature-2.JPG";
-import featureThree from "@/asset/image/destop/feature-3.jpg";
+import { useLazyImages } from "@/composables/useLazyImages";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const { urls: featureSrc, observe: observeFeatureImage } = useLazyImages(
+  "@/asset/image/destop/*.{jpg,jpeg,JPG,png,webp}",
+);
 
 const heroCard = ref(null);
 const heroYear = ref(null);
@@ -20,7 +22,7 @@ const works = [
   {
     id: "w01",
     title: "台灣好樂園",
-    image: featureOne,
+    imageFile: "feature-1.jpg",
     category: "Visual Identity, Event",
     year: "2023",
     description:
@@ -30,7 +32,7 @@ const works = [
     id: "v01",
     title: "心動 ",
     titleEn: "ONE BUY ONE",
-    image: featureTwo,
+    imageFile: "feature-2.jpg",
     category: "Visual Identity, Event",
     year: "2023",
     description:
@@ -39,7 +41,7 @@ const works = [
   {
     id: "v03",
     title: "山派季",
-    image: featureThree,
+    imageFile: "feature-3.jpg",
     category: "Visual Identity, Event",
     year: "2023",
     description:
@@ -207,12 +209,15 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
-        <div class="work__media">
+        <div
+          class="work__media"
+          :ref="(el) => el && observeFeatureImage(el, work.imageFile)"
+        >
           <img
+            v-if="featureSrc[work.imageFile]"
             class="work__image"
-            :src="work.image"
+            :src="featureSrc[work.imageFile]"
             :alt="work.titleEn ? `${work.title} ${work.titleEn}` : work.title"
-            loading="lazy"
             decoding="async"
             @load="revealFeaturedImage"
           />

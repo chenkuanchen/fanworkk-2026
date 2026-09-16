@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Satoshi';
-  src: url('../asset/font/Satoshi/Satoshi-Regular.otf') format('opentype');
+  src: url('../asset/font/Satoshi/Satoshi-Regular-subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -8,7 +8,7 @@
 
 @font-face {
   font-family: 'Satoshi';
-  src: url('../asset/font/Satoshi/Satoshi-Medium.otf') format('opentype');
+  src: url('../asset/font/Satoshi/Satoshi-Medium-subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 500;
   font-display: swap;
@@ -16,7 +16,7 @@
 
 @font-face {
   font-family: 'Satoshi';
-  src: url('../asset/font/Satoshi/Satoshi-Bold.otf') format('opentype');
+  src: url('../asset/font/Satoshi/Satoshi-Bold-subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 700;
   font-display: swap;
@@ -32,7 +32,7 @@
 
 @font-face {
   font-family: 'Zen Kaku Gothic New';
-  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Regular.ttf') format('truetype');
+  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Regular-subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -40,7 +40,7 @@
 
 @font-face {
   font-family: 'Zen Kaku Gothic New';
-  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Medium.ttf') format('truetype');
+  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Medium-subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 500;
   font-display: swap;
@@ -48,7 +48,7 @@
 
 @font-face {
   font-family: 'Zen Kaku Gothic New';
-  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Bold.ttf') format('truetype');
+  src: url('../asset/font/Zen_Kaku_Gothic_New/ZenKakuGothicNew-Bold-subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 700;
   font-display: swap;

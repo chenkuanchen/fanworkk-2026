@@ -2,16 +2,12 @@
 import { nextTick, onMounted, onUnmounted, ref } from "vue";
 import { onBeforeRouteLeave, RouterLink } from "vue-router";
 
-import gameArtImage from "@/asset/image/works/G01_preview.jpg";
-import motionImage from "@/asset/image/works/M01_preview.jpg";
-import visualIdentityOne from "@/asset/image/works/V01_Preview.jpg";
-import visualIdentityTwo from "@/asset/image/works/V02_preview.jpg";
-import visualIdentityThree from "@/asset/image/works/V03_preview.jpg";
-import visualIdentityFour from "@/asset/image/works/V04_preview.jpg";
-import visualIdentityFive from "@/asset/image/works/V05_preview.jpg";
-import visualIdentitySix from "@/asset/image/works/V06_preview.jpg";
-import visualIdentitySeven from "@/asset/image/works/V07_preview.jpg";
-import websiteImage from "@/asset/image/works/W01_preview.jpg";
+import { useLazyImages } from "@/composables/useLazyImages";
+
+const { urls: previewSrc, observe: observePreviewImage } = useLazyImages(
+  "@/asset/image/works/*.{jpg,jpeg,JPG,png,webp}",
+  { rootMargin: "320px 0px" },
+);
 
 const WORKS_SCROLL_KEY = "works-scroll-y";
 const WORKS_RETURN_ID_KEY = "works-return-id";
@@ -33,7 +29,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2026",
-    image: visualIdentityOne,
+    imageFile: "V01_Preview.jpg",
   },
   {
     id: "v02",
@@ -41,7 +37,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2026",
-    image: visualIdentityTwo,
+    imageFile: "V02_preview.jpg",
   },
   {
     id: "w01",
@@ -49,7 +45,7 @@ const works = [
     category: "Website",
     type: "Website",
     year: "2026",
-    image: websiteImage,
+    imageFile: "W01_preview.jpg",
   },
   {
     id: "v06",
@@ -57,7 +53,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: visualIdentitySix,
+    imageFile: "V06_preview.jpg",
   },
   {
     id: "v05",
@@ -65,7 +61,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: visualIdentityFive,
+    imageFile: "V05_preview.jpg",
   },
   {
     id: "v04",
@@ -73,7 +69,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: visualIdentityFour,
+    imageFile: "V04_preview.jpg",
   },
   {
     id: "v03",
@@ -81,7 +77,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: visualIdentityThree,
+    imageFile: "V03_preview.jpg",
   },
   {
     id: "v07",
@@ -89,7 +85,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Brand System Extension",
     year: "2024",
-    image: visualIdentitySeven,
+    imageFile: "V07_preview.jpg",
   },
   {
     id: "m01",
@@ -97,7 +93,7 @@ const works = [
     category: "Motion",
     type: "Motion",
     year: "2023",
-    image: motionImage,
+    imageFile: "M01_preview.jpg",
   },
   {
     id: "g01",
@@ -105,7 +101,7 @@ const works = [
     category: "Game Art",
     type: "Game Art",
     year: "2023",
-    image: gameArtImage,
+    imageFile: "G01_preview.jpg",
   },
 ];
 
@@ -270,13 +266,20 @@ onUnmounted(() => {
                     : null
                 "
               >
-                <div class="work-card__media">
+                <div
+                  class="work-card__media"
+                  :ref="
+                    (el) =>
+                      el &&
+                      work.imageFile &&
+                      observePreviewImage(el, work.imageFile)
+                  "
+                >
                   <img
-                    v-if="work.image"
+                    v-if="work.imageFile && previewSrc[work.imageFile]"
                     class="work-card__image"
-                    :src="work.image"
+                    :src="previewSrc[work.imageFile]"
                     :alt="work.title"
-                    loading="lazy"
                     decoding="async"
                     @load="registerWorkImage"
                   />
