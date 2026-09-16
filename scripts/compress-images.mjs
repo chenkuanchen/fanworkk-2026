@@ -1,6 +1,5 @@
 /**
  * Batch-compress raster images under src/asset/image (in-place).
- * Prefer `npm run generate-responsive-images` for clarity + srcset variants.
  * Round-2 settings: smaller max widths + lower JPEG quality.
  * Run: node scripts/compress-images.mjs
  */

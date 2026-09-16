@@ -2,21 +2,16 @@
 import { nextTick, onMounted, onUnmounted, ref } from "vue";
 import { onBeforeRouteLeave, RouterLink } from "vue-router";
 
-import { pickResponsive } from "@/utils/responsiveImage.js";
-
-const worksModules = {
-  ...import.meta.glob("@/asset/image/works/*.{jpg,JPG,jpeg,webp}", {
-    eager: true,
-    import: "default",
-  }),
-  ...import.meta.glob("@/asset/image/works/*@*.webp", {
-    eager: true,
-    import: "default",
-  }),
-};
-
-const WORK_CARD_SIZES =
-  "(max-width: 600px) 94vw, (max-width: 1200px) 42vw, 38vw";
+import gameArtImage from "@/asset/image/works/G01_preview.jpg";
+import motionImage from "@/asset/image/works/M01_preview.jpg";
+import visualIdentityOne from "@/asset/image/works/V01_Preview.jpg";
+import visualIdentityTwo from "@/asset/image/works/V02_preview.jpg";
+import visualIdentityThree from "@/asset/image/works/V03_preview.jpg";
+import visualIdentityFour from "@/asset/image/works/V04_preview.jpg";
+import visualIdentityFive from "@/asset/image/works/V05_preview.jpg";
+import visualIdentitySix from "@/asset/image/works/V06_preview.jpg";
+import visualIdentitySeven from "@/asset/image/works/V07_preview.jpg";
+import websiteImage from "@/asset/image/works/W01_preview.jpg";
 
 const WORKS_SCROLL_KEY = "works-scroll-y";
 const WORKS_RETURN_ID_KEY = "works-return-id";
@@ -38,7 +33,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2026",
-    image: pickResponsive(worksModules, "V01_Preview.jpg"),
+    image: visualIdentityOne,
   },
   {
     id: "v02",
@@ -46,7 +41,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2026",
-    image: pickResponsive(worksModules, "V02_preview.jpg"),
+    image: visualIdentityTwo,
   },
   {
     id: "w01",
@@ -54,7 +49,7 @@ const works = [
     category: "Website",
     type: "Website",
     year: "2026",
-    image: pickResponsive(worksModules, "W01_preview.jpg"),
+    image: websiteImage,
   },
   {
     id: "v06",
@@ -62,7 +57,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: pickResponsive(worksModules, "V06_preview.jpg"),
+    image: visualIdentitySix,
   },
   {
     id: "v05",
@@ -70,7 +65,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: pickResponsive(worksModules, "V05_preview.jpg"),
+    image: visualIdentityFive,
   },
   {
     id: "v04",
@@ -78,7 +73,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: pickResponsive(worksModules, "V04_preview.jpg"),
+    image: visualIdentityFour,
   },
   {
     id: "v03",
@@ -86,7 +81,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Event",
     year: "2025",
-    image: pickResponsive(worksModules, "V03_preview.jpg"),
+    image: visualIdentityThree,
   },
   {
     id: "v07",
@@ -94,7 +89,7 @@ const works = [
     category: "Visual Identity",
     type: "Visual Identity, Brand System Extension",
     year: "2024",
-    image: pickResponsive(worksModules, "V07_preview.jpg"),
+    image: visualIdentitySeven,
   },
   {
     id: "m01",
@@ -102,7 +97,7 @@ const works = [
     category: "Motion",
     type: "Motion",
     year: "2023",
-    image: pickResponsive(worksModules, "M01_preview.jpg"),
+    image: motionImage,
   },
   {
     id: "g01",
@@ -110,7 +105,7 @@ const works = [
     category: "Game Art",
     type: "Game Art",
     year: "2023",
-    image: pickResponsive(worksModules, "G01_preview.jpg"),
+    image: gameArtImage,
   },
 ];
 
@@ -277,14 +272,11 @@ onUnmounted(() => {
               >
                 <div class="work-card__media">
                   <img
-                    v-if="work.image?.src"
+                    v-if="work.image"
                     class="work-card__image"
-                    :src="work.image.src"
-                    :srcset="work.image.srcset"
-                    :sizes="WORK_CARD_SIZES"
+                    :src="work.image"
                     :alt="work.title"
-                    :loading="work.id === 'v01' ? 'eager' : 'lazy'"
-                    :fetchpriority="work.id === 'v01' ? 'high' : undefined"
+                    loading="lazy"
                     decoding="async"
                     @load="registerWorkImage"
                   />

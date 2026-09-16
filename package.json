@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "compress-images": "node scripts/compress-images.mjs",
-    "generate-responsive-images": "node scripts/generate-responsive-images.mjs"
+    "compress-images": "node scripts/compress-images.mjs"
   },
   "dependencies": {
     "@pmndrs/vanilla": "^1.25.0",

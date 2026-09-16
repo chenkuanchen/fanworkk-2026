@@ -6,21 +6,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import heroStart from "@/asset/image/destop/hero-filp-water-start.svg";
 import enterIcon from "@/asset/image/icon/icon_enter.svg";
-import { pickResponsive } from "@/utils/responsiveImage.js";
-
-const destopModules = {
-  ...import.meta.glob("@/asset/image/destop/feature-*.{jpg,JPG,jpeg,webp}", {
-    eager: true,
-    import: "default",
-  }),
-  ...import.meta.glob("@/asset/image/destop/feature-*@*.webp", {
-    eager: true,
-    import: "default",
-  }),
-};
-
-const FEATURE_SIZES =
-  "(max-width: 600px) 58vw, (max-width: 1200px) 42vw, 38vw";
+import featureOne from "@/asset/image/destop/feature-1.jpg";
+import featureTwo from "@/asset/image/destop/feature-2.JPG";
+import featureThree from "@/asset/image/destop/feature-3.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -32,7 +20,7 @@ const works = [
   {
     id: "w01",
     title: "台灣好樂園",
-    image: pickResponsive(destopModules, "feature-1.jpg"),
+    image: featureOne,
     category: "Visual Identity, Event",
     year: "2023",
     description:
@@ -42,7 +30,7 @@ const works = [
     id: "v01",
     title: "心動 ",
     titleEn: "ONE BUY ONE",
-    image: pickResponsive(destopModules, "feature-2.JPG"),
+    image: featureTwo,
     category: "Visual Identity, Event",
     year: "2023",
     description:
@@ -51,7 +39,7 @@ const works = [
   {
     id: "v03",
     title: "山派季",
-    image: pickResponsive(destopModules, "feature-3.jpg"),
+    image: featureThree,
     category: "Visual Identity, Event",
     year: "2023",
     description:
@@ -222,9 +210,7 @@ onUnmounted(() => {
         <div class="work__media">
           <img
             class="work__image"
-            :src="work.image.src"
-            :srcset="work.image.srcset"
-            :sizes="FEATURE_SIZES"
+            :src="work.image"
             :alt="work.titleEn ? `${work.title} ${work.titleEn}` : work.title"
             loading="lazy"
             decoding="async"
