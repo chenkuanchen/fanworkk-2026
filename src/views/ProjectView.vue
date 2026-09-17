@@ -1034,7 +1034,7 @@ onBeforeUnmount(() => {
 
   .project-footer {
     min-height: 0;
-    padding-top: 42px;
+    padding-top: 28px;
     padding-bottom: calc(48px + 12px);
   }
 
@@ -1051,7 +1051,8 @@ onBeforeUnmount(() => {
 
   .project-footer {
     justify-content: flex-start;
-    padding: 42px calc(var(--grid-inset) + var(--grid-pair)) calc(48px + 12px);
+    min-height: calc(32px + 48px + 32px);
+    padding: 32px calc(var(--grid-inset) + var(--grid-pair)) 32px;
   }
 
   .project-footer__nav {
@@ -1064,7 +1065,7 @@ onBeforeUnmount(() => {
 
   .to-top-button {
     position: absolute;
-    right: 0;
+    right: calc((36px - 24px) / -2);
     left: auto;
     transform: none;
   }
