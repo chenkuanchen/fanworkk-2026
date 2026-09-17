@@ -9,7 +9,7 @@ import {
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import decoTall from "@/asset/image/about-me/dec-02.avif";
+import decoTall from "@/asset/image/about-me/deco.jpg";
 
 const GlassScene = defineAsyncComponent(
   () => import("@/components/GlassScene.vue"),
@@ -152,14 +152,7 @@ onUnmounted(() => {
           <h1>Information</h1>
           <p>
             陳冠臻，視覺設計師，現居台中。<br />
-            喜歡看，看疏密、看長短、看正反、看明暗，將觀察囊括成一套理解，再透過設計詮釋。對於設計在
-            不同媒介與表現形式保持好奇，也持續探索不同載體的可能性。<br /><br />
-            擁有近四年的視覺設計實務經驗，專業能力橫跨平面視覺、品牌活動、數位內容與
-            UI/UX設計。過去的工作經驗讓我逐漸建立「使用者導向的設計思維」與「結構化的資訊整理能力」，熟悉
-            Figma、Adobe 等設計工具，並具備 RWD
-            介面設計規範與前端組件化開發的基本概念。近期完成為期四個月的「產業新尖兵－Figma
-            UI/UX 與 Vue.js 前端培訓班」，進一步補足 UI/UX
-            與前端開發之間的實作能力。
+            喜歡看，看疏密、看長短、看正反、看明暗。從觀察裡整理脈絡，將感受轉化為理解，再透過設計詮釋。對互動體驗感興趣，也持續探索設計在不同媒介與載體中的可能性。擁有三年視覺設計實務經驗，涉略平面視覺、品牌活動、數位內容與 UI/UX 設計。擅長以使用者為導向的思考方式整理資訊，並將複雜內容轉化為清晰的視覺與體驗。熟悉 Adobe Creative Suite、Figma 等設計工具，持續累積跨媒介的設計實踐。
           </p>
         </div>
       </div>
@@ -336,6 +329,7 @@ onUnmounted(() => {
   font-size: 16px;
   line-height: 1.7;
   letter-spacing: 0.02em;
+  font-weight: 500;
   text-align: justify;
   text-justify: inter-ideograph;
 }
@@ -425,7 +419,7 @@ onUnmounted(() => {
 .info-block__cols {
   margin-bottom: 20px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.04em;
   opacity: 0.55;
 }
@@ -444,6 +438,7 @@ onUnmounted(() => {
 .info-block li {
   margin-bottom: 20px;
   font-size: 18px;
+  font-weight: 500;
   line-height: 1.45;
 }
 
@@ -454,7 +449,7 @@ onUnmounted(() => {
 .info-block li > span:nth-child(2),
 .info-block__award {
   font-family: var(--font-tc);
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .info-block__award {
@@ -523,24 +518,25 @@ onUnmounted(() => {
   }
 
   .info-hero {
-    height: calc(150vh - 32px);
+    height: calc(180dvh - 32px);
   }
 
   .info-hero__sticky {
+    height: 120dvh;
     min-height: 0;
   }
 
   .info-hero__skills {
-    top: 60%;
+    top: 24dvh;
     width: calc(100% - 24px);
-    font-size: 32px;
+    font-size: 16px;
     line-height: 1.5;
     font-weight: 500;
     text-align: left;
   }
 
   .info-hero__intro {
-    top: 60%;
+    top: 60dvh;
     left: calc(var(--grid-inset) + var(--grid-pair));
     width: calc(4 * var(--page-grid-cell) - 2 * var(--grid-pair));
   }
@@ -557,14 +553,14 @@ onUnmounted(() => {
   }
 
   .info-hero__deco {
-    top: calc(50% - 120px);
+    top: calc(50dvh - 120px);
     width: 420px;
     height: 420px;
   }
 
   .info-details {
     min-height: 0;
-    padding: 100px var(--grid-inset) var(--detail-cell)
+    padding: 100px var(--grid-inset) calc(var(--detail-cell) + 24px)
       calc(var(--grid-inset) + var(--grid-pair));
   }
 

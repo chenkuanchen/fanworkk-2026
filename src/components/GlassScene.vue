@@ -45,12 +45,12 @@ function applyProgress(t) {
     ? lerp(0, 0.98, p) // 手機：左→右
     : lerp(0, 2.35, p); // 桌機：左→右
   model.position.y = isMobile
-    ? lerp(-0.5, 1.1, p) // 手機：下→上
+    ? lerp(-0.1, 1.1, p) // 手機：下→上
     : lerp(-0.5, -0.4, p); // 桌機：微往下
   model.position.z = lerp(0, -0.4, p); // 稍微往後
 
   // 大小：lerp(起始倍率, 結束倍率, p)
-  const scale = lerp(1.08, 1.18, p) * (isMobile ? 1.2 : 1);
+  const scale = lerp(1.08, 1.18, p) * (isMobile ? 1 : 1);
   model.scale.setScalar(model.userData.baseScale * scale);
 
   // 相機遠近：數字越大＝拉越遠

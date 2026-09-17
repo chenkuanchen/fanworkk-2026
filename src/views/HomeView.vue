@@ -14,6 +14,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 const heroCard = ref(null);
 const heroYear = ref(null);
+const heroYearName = ref(null);
+const heroYearDate = ref(null);
 const worksSection = ref(null);
 
 const works = [
@@ -51,11 +53,41 @@ let animationFrame;
 let imageObserver;
 let scaleContext;
 let reduceMotion = false;
+const mobileYearQuery = window.matchMedia("(max-width: 600px)");
+
+function clearYearSplit() {
+  if (heroYearName.value) heroYearName.value.style.transform = "";
+  if (heroYearDate.value) heroYearDate.value.style.transform = "";
+  if (heroYear.value) heroYear.value.style.opacity = "";
+}
 
 function updateHero() {
   if (!heroCard.value || !heroYear.value) return;
 
-  const hasReachedTrigger = heroYear.value.getBoundingClientRect().bottom <= 0;
+  let hasReachedTrigger = false;
+
+  if (mobileYearQuery.matches) {
+    const hero = heroYear.value.parentElement;
+    const progress = Math.min(
+      1,
+      Math.max(0, -hero.getBoundingClientRect().top / window.innerHeight),
+    );
+
+    if (!reduceMotion && heroYearName.value && heroYearDate.value) {
+      const nameTravel =
+        window.innerWidth * 0.5 + heroYearName.value.offsetWidth + 24;
+      const dateTravel =
+        window.innerWidth * 0.5 + heroYearDate.value.offsetWidth + 24;
+      heroYearName.value.style.transform = `translate3d(${-progress * nameTravel}px, 0, 0)`;
+      heroYearDate.value.style.transform = `translate3d(${progress * dateTravel}px, 0, 0)`;
+      heroYear.value.style.opacity = progress >= 1 ? "0" : "1";
+    }
+
+    hasReachedTrigger = progress >= 1;
+  } else {
+    clearYearSplit();
+    hasReachedTrigger = heroYear.value.getBoundingClientRect().bottom <= 0;
+  }
 
   heroCard.value.classList.toggle("hero-card--flipped", hasReachedTrigger);
 }
@@ -150,6 +182,7 @@ onUnmounted(() => {
   window.removeEventListener("resize", requestScrollUpdate);
   imageObserver?.disconnect();
   scaleContext?.revert();
+  clearYearSplit();
 
   if (animationFrame) {
     window.cancelAnimationFrame(animationFrame);
@@ -170,7 +203,10 @@ onUnmounted(() => {
     </div>
 
     <section id="top" class="hero" aria-label="自我介紹">
-      <p ref="heroYear" class="hero__year">Guan-Zhen&nbsp; 2026</p>
+      <p ref="heroYear" class="hero__year">
+        <span ref="heroYearName" class="hero__year-name">Guan-Zhen</span>
+        <span ref="heroYearDate" class="hero__year-date">&nbsp;2026</span>
+      </p>
       <div class="hero__sticky">
         <div
           ref="heroCard"
@@ -187,7 +223,7 @@ onUnmounted(() => {
           <div class="hero-card__face hero-card__face--back">
             <p class="hero-card__intro">
               視覺設計師，現居台中。<br />
-              作品橫跨動畫、3D 以及平面。喜歡探究有趣的設計數位體驗，善於轉譯訊息為多面向、能被感受與記憶的產物。
+              作品橫跨平面、3D 與動畫，喜歡有趣的數位體驗。致力於保持好奇心，持續探索、持續產出設計。
             </p>
             <RouterLink class="hero-card__more" :to="{ name: 'info' }">
               read more&nbsp; →
@@ -279,7 +315,7 @@ main {
 .hero {
   position: relative;
   z-index: 1;
-  height: 300vh;
+  height: 360vh;
 }
 
 .hero__sticky {
@@ -356,6 +392,13 @@ main {
   transform: translateY(-50%);
   font-size: 24px;
   font-weight: 700;
+  white-space: nowrap;
+}
+
+.hero__year-name,
+.hero__year-date {
+  display: inline-block;
+  will-change: transform;
 }
 
 .featured-works {
@@ -551,11 +594,13 @@ main {
   }
 
   .hero__year {
-    top: calc(50dvh + 240px);
+    position: fixed;
+    z-index: 1;
+    top: calc(50dvh + 196px);
     right: auto;
     left: 50%;
     transform: translate(-50%, -50%);
-    white-space: nowrap;
+    pointer-events: none;
   }
 
   .featured-works {
@@ -642,7 +687,7 @@ main {
     grid-column: 2 / span 3;
     grid-row: 2;
     justify-self: start;
-    margin-top: 36px;
+    margin-top: 56px;
     padding-right: 0;
     gap: 4px;
     font-size: 12px;
@@ -678,12 +723,6 @@ main {
     transition: none;
     will-change: auto;
   }
-}
-
-@media (max-width: 600px) and (prefers-reduced-motion: reduce) {
-  .hero-card {
-    transform: rotateY(180deg);
-  }
 
   .work__title {
     position: static;
@@ -704,6 +743,16 @@ main {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+@media (max-width: 600px) and (prefers-reduced-motion: reduce) {
+  .hero-card {
+    transform: rotateY(180deg);
+  }
+
+  .hero__year {
+    position: absolute;
   }
 }
 </style>
