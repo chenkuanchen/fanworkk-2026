@@ -687,6 +687,7 @@ onBeforeUnmount(() => {
 
 .project-details-clip {
   min-height: 0;
+  overflow: hidden;
   opacity: 0;
   pointer-events: none;
   transition: opacity 180ms ease;
