@@ -99,7 +99,7 @@ onUnmounted(() => {
 
 @media (max-width: 600px) {
   .contact-bar {
-    bottom: 48px;
+    bottom: 32px;
     left: 50%;
     width: min(280px, calc(100vw - 48px));
     height: 48px;

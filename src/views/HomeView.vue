@@ -177,7 +177,12 @@ onUnmounted(() => {
           class="hero-card"
         >
           <div class="hero-card__face">
-            <img :src="heroStart" alt="" />
+            <img
+              :src="heroStart"
+              alt=""
+              fetchpriority="high"
+              decoding="async"
+            />
           </div>
           <div class="hero-card__face hero-card__face--back">
             <p class="hero-card__intro">
@@ -523,11 +528,22 @@ main {
   }
 
   .hero__sticky {
+    display: grid;
+    place-items: center;
+    height: 100dvh;
     min-height: 0;
   }
 
   .hero-card {
+    position: relative;
+    top: auto;
+    left: auto;
     width: min(272px, 76vw);
+    transform: rotateY(0deg);
+  }
+
+  .hero-card--flipped {
+    transform: rotateY(180deg);
   }
 
   .hero-card__face--back {
@@ -535,11 +551,15 @@ main {
   }
 
   .hero__year {
-    top: calc(50vh + 240px);
+    top: calc(50dvh + 240px);
     right: auto;
     left: 50%;
     transform: translate(-50%, -50%);
     white-space: nowrap;
+  }
+
+  .featured-works {
+    margin-top: -100dvh;
   }
 
   .featured-works__heading {
@@ -657,6 +677,12 @@ main {
     transform: translate(-50%, -50%) rotateY(180deg);
     transition: none;
     will-change: auto;
+  }
+}
+
+@media (max-width: 600px) and (prefers-reduced-motion: reduce) {
+  .hero-card {
+    transform: rotateY(180deg);
   }
 
   .work__title {

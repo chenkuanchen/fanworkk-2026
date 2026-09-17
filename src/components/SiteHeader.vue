@@ -96,7 +96,7 @@ function closeMenu() {
 
 @media (max-width: 600px) {
   .site-header {
-    top: 61px;
+    top: 34px;
     right: 12px;
     left: 12px;
     justify-content: center;
@@ -104,7 +104,7 @@ function closeMenu() {
 
   .site-header__brand {
     position: fixed;
-    top: 63px;
+    top: 36px;
     left: 50%;
     margin: 0;
     transform: translateX(-50%);
@@ -117,7 +117,7 @@ function closeMenu() {
   .site-header__menu-toggle {
     position: fixed;
     z-index: 21;
-    top: 61px;
+    top: 34px;
     left: 12px;
     display: block;
     width: 36px;
@@ -135,7 +135,7 @@ function closeMenu() {
   .site-header__mobile-menu {
     position: fixed;
     z-index: 20;
-    top: 61px;
+    top: 34px;
     left: 12px;
     display: block;
     width: 36px;
@@ -150,7 +150,7 @@ function closeMenu() {
   }
 
   .site-header--menu-open .site-header__mobile-menu {
-    top: 67px;
+    top: 40px;
     width: 72px;
     height: 293px;
     background-color: var(--color-background);
