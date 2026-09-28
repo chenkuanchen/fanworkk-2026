@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const base = '/fanworkk-2026/'
+const base = '/'
 const heroImageDevPath = 'src/asset/image/destop/hero-filp-water-start.svg'
 
 function preloadHeroImage() {
