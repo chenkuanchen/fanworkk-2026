@@ -405,7 +405,18 @@ onBeforeUnmount(() => {
     </div>
 
     <header class="project-hero">
-      <h1>{{ project.title }}</h1>
+      <div class="project-title-wrapper">
+        <h1>{{ project.title }}</h1>
+        <a
+          v-if="project.id === 'w01'"
+          href="https://fcu-11504-themepark.dev-hub.io/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="project-external-link"
+        >
+          <img :src="toTopIcon" alt="外部連結" />
+        </a>
+      </div>
 
       <div class="project-summary">
         <dl class="project-meta">
@@ -624,6 +635,29 @@ onBeforeUnmount(() => {
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.035em;
+}
+
+.project-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.project-external-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.project-external-link:hover {
+  opacity: 0.7;
+}
+
+.project-external-link img {
+  width: 36px;
+  height: 36px;
+  transform: rotate(45deg);
 }
 
 .project-summary {
