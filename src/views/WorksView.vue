@@ -348,7 +348,7 @@ onUnmounted(() => {
 .works-filter {
   display: flex;
   width: 100%;
-  min-height: 48px;
+  min-height: 40px;
   align-items: flex-start;
   padding: 0;
   border: 0;
@@ -356,7 +356,7 @@ onUnmounted(() => {
   color: inherit;
   cursor: pointer;
   font: inherit;
-  font-size: 36px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.02em;
