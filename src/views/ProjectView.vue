@@ -144,6 +144,7 @@ const media = ref([]);
 const playingVideoId = ref(null);
 const activatedVideos = reactive({});
 let imageObserver;
+let videoObserver;
 let mediaRequestId = 0;
 
 const project = computed(() =>
@@ -291,6 +292,12 @@ async function loadProjectMedia() {
     coverElement.classList.add("project-media--loaded");
     imageObserver?.observe(coverElement);
   }
+
+  videoObserver?.disconnect();
+  const videos = projectPage.value?.querySelectorAll("video");
+  videos?.forEach(video => {
+    videoObserver?.observe(video);
+  });
 }
 
 watch(
@@ -381,6 +388,24 @@ onMounted(() => {
     { threshold: 0.2 },
   );
 
+  videoObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          if (video.paused) {
+            video.play().catch(() => {});
+          }
+        } else {
+          if (!video.paused) {
+            video.pause();
+          }
+        }
+      });
+    },
+    { threshold: 0.2 },
+  );
+
   const coverElement = projectPage.value.querySelector(
     ".project-media:first-child",
   );
@@ -390,6 +415,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", updateToTopVisibility);
   imageObserver?.disconnect();
+  videoObserver?.disconnect();
 });
 </script>
 
@@ -499,11 +525,14 @@ onBeforeUnmount(() => {
             />
             <video
               class="project-media__overlay-video"
+              :src="item.src + '#t=0.001'"
               :aria-label="item.alt"
               :poster="item.poster || undefined"
               :controls="!!activatedVideos[item.id]"
               playsinline
-              preload="none"
+              muted
+              loop
+              preload="metadata"
               @play="onVideoPlay(item.id)"
               @pause="onVideoPause(item.id, $event)"
             ></video>
@@ -519,11 +548,14 @@ onBeforeUnmount(() => {
           </template>
           <template v-else-if="item.isVideo">
             <video
+              :src="item.src + '#t=0.001'"
               :aria-label="item.alt"
               :poster="item.poster || undefined"
               :controls="!!activatedVideos[item.id]"
               playsinline
-              preload="none"
+              muted
+              loop
+              preload="metadata"
               @play="onVideoPlay(item.id)"
               @pause="onVideoPause(item.id, $event)"
               @loadedmetadata="registerProjectMedia"
